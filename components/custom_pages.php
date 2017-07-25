@@ -71,9 +71,9 @@
 			eval("?>".htmlspecialchars_decode($page_content[LOCALESHORT])."<?php ");
 			$custompage = ob_get_contents();
 			ob_end_flush();
-			$custompage = preg_split("/<!?--\s*pagebreak\s*-->/i", $custompage);
-			$pagecount = count($custompage);
-			echo $custompage[$_GET['rowstart']];
+//			$custompage = preg_split("/<!?--\s*pagebreak\s*-->/i", $custompage);
+//			$pagecount = count($custompage);
+//			echo $custompage[$_GET['rowstart']];
 
 		} else {
 			echo "<div class='admin-message' style='text-align:center'><br /><img style='border:0px; vertical-align:middle;' src ='".BASEDIR."images/warn.png' alt=''/><br /> ".$locale['400']."<br /><a href='index.php' onclick='javascript:history.back();return false;'>".$locale['403']."</a>\n<br /><br /></div>\n";

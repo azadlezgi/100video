@@ -194,7 +194,7 @@ define("FUSION_SELF", basename($_SERVER['PHP_SELF']));
 define("FUSION_IP", $_SERVER['REMOTE_ADDR']);
 define("QUOTES_GPC", (ini_get('magic_quotes_gpc') ? TRUE : FALSE));
 define("FUSION_URI", $_SERVER['REQUEST_URI']);
-define("FUSION_REFERER", $_SERVER['HTTP_REFERER']);
+define("FUSION_REFERER", (isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : "/"));
 define("FUSION_HOST", $_SERVER['HTTP_HOST']);
 define("FUSION_TODAY", mktime());
 

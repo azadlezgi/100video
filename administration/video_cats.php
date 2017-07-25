@@ -677,7 +677,7 @@ add_to_footer("<script type='text/javascript'>
 				</td>
 				<td class="num"><?php echo $data['order']; ?></td>
 				<td class="links">
-					<a href="<?php echo BASEDIR . $data['seourl_url']; ?>" target="_blank" title="<?php echo $locale['413']; ?>"><img src="<?php echo IMAGES; ?>view.png" alt="<?php echo $locale['413']; ?>"></a>
+					<a href="/videos/<?php echo $data['alias']; ?>" target="_blank" title="<?php echo $locale['413']; ?>"><img src="<?php echo IMAGES; ?>view.png" alt="<?php echo $locale['413']; ?>"></a>
 					<a href="<?php echo FUSION_SELF . $aidlink; ?>&action=edit&id=<?php echo $data['id']; ?>" title="<?php echo $locale['414']; ?>"><img src="<?php echo IMAGES; ?>edit.png" alt="<?php echo $locale['414']; ?>"></a>
 					<a href="<?php echo FUSION_SELF . $aidlink; ?>&action=del&id=<?php echo $data['id']; ?>" title="<?php echo $locale['415']; ?>" onclick="return DeleteOk();"><img src="<?php echo IMAGES; ?>delete.png" alt="<?php echo $locale['415']; ?>"></a>
 				</td>

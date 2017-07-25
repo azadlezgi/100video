@@ -92,5 +92,5 @@ echo handle_output($output);
 // 	ob_end_flush();
 // }
 
-mysql_close($db_connect);
+//mysql_close($db_connect);
 ?>
