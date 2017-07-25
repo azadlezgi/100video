@@ -13,24 +13,24 @@ require_once INCLUDES."theme_functions_include.php";
 
 function render_page($license = false) {
 	
-global $settings, $main_style, $locale, $mysql_queries_time, $languages, $currency, $aidlink;
+global $settings, $main_style, $locale, $mysql_queries_time, $languages, $currency, $aidlink, $userdata;
 
 
 
 add_to_head ("<meta name='viewport' content='width=device-width, initial-scale=1'>");
 
 
-add_to_head ("<meta name='advmaker-verification' content='90c7d23e23e4b6126499a9b125fe2422'/>");
+//add_to_head ("<meta name='advmaker-verification' content='90c7d23e23e4b6126499a9b125fe2422'/>");
 
 
-add_to_footer ("<script type='text/javascript' src='". THEME ."js/lightbox.js'></script>");
-add_to_head ("<link rel='stylesheet' href='". THEME ."css/lightbox.css' type='text/css' media='screen' />");
+//add_to_footer ("<script type='text/javascript' src='". THEME ."js/lightbox.js'></script>");
+//add_to_head ("<link rel='stylesheet' href='". THEME ."css/lightbox.css' type='text/css' media='screen' />");
 
-add_to_head ("<meta name='yandex-verification' content='4b3c2a42a7daa134'/>");
+//add_to_head ("<meta name='yandex-verification' content='4b3c2a42a7daa134'/>");
 
 
 
-add_to_footer ("<script type='text/javascript' src='". THEME ."js/share42.js'></script>");
+//add_to_footer ("<script type='text/javascript' src='". THEME ."js/share42.js'></script>");
 
 add_to_head ("<link rel='stylesheet' href='". THEME ."css/font-awesome.css' type='text/css' media='screen' />");
 

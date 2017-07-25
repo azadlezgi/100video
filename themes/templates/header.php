@@ -38,11 +38,9 @@ echo "<link rel='icon' href='". THEME ."images/favicon.ico' type='image/x-icon' 
 }
 if (function_exists("get_head_tags")) { echo get_head_tags(); }
 
-if ($_POST['domain_name']) {
-	add_to_head ("<script type='text/javascript' src='".INCLUDES."jquery/jquery.js'></script>");
-} else {
-	add_to_footer ("<script type='text/javascript' src='".INCLUDES."jquery/jquery.js'></script>");
-} // Yesli Domain check
+
+add_to_footer ("<script type='text/javascript' src='".INCLUDES."jquery/jquery.js'></script>");
+
 
 // echo "<script type='text/javascript' src='".INCLUDES."jquery/jquery.js'></script>\n";
 // echo "<script async type='text/javascript' src='". INCLUDES ."jscript.js'></script>\n";

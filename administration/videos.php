@@ -6,9 +6,11 @@
 
 	include LOCALE . LOCALESET ."admin/videos.php";
 
-	$settings['videos_per_page'] = 50;
+    $settings['companent_root_url'] = "video/";
 
-	if ($_GET['action']!="order") {
+    if ( isset($_GET['action']) && $_GET['action']=="order") {
+
+    } else {
 		require_once THEMES ."templates/admin_header.php";
 		require_once INCLUDES."photo_functions_include.php";
 		if ($settings['tinymce_enabled']) {
@@ -22,62 +24,55 @@
 	} // Yesli action ne order
 
 
-	if ($_GET['action']=="order") {
+	if (isset($_GET['action']) && $_GET['action']=="order") {
 
-		if (isset($_GET['listItem']) && is_array($_GET['listItem'])) {
-			foreach ($_GET['listItem'] as $position => $item) {
-				if (isnum($position) && isnum($item)) {
-					dbquery("UPDATE ". DB_VIDEOS ." SET video_order='". ($position+1) ."' WHERE video_id='". $item ."'");
-				}
-			}
+        if (isset($_GET['listItem']) && is_array($_GET['listItem'])) {
+            foreach ($_GET['listItem'] as $position => $item) {
+                if (isnum($position) && isnum($item)) {
+                    dbquery("UPDATE ". DB_VIDEOS ." SET `order`='". ($position+1) ."' WHERE `id`='". $item ."'");
+                }
+            }
 
-			header("Content-Type: text/html; charset=". $locale['charset'] ."\n");
-			echo "<div id='close-message'>\n";
-			echo "	<div class='success'>". $locale['success_007'] ."</div>\n";
-			echo "</div>\n";
+            header("Content-Type: text/html; charset=". $locale['charset'] ."\n");
+            echo "<div id='close-message'>\n";
+            echo "	<div class='success'>". $locale['success_007'] ."</div>\n";
+            echo "</div>\n";
 
-		}
+        }
 
+	} else if (isset($_GET['action']) && $_GET['action']=="status") {
 
-	} else if ($_GET['action']=="status") {
-
-		$video_id = (INT)$_GET['id'];
-		$video_status = (INT)$_GET['status'];
-		$video_status = ($video_status ? 0 : 1);
+		$id = (INT)$_GET['id'];
+		$status = (INT)$_GET['status'];
+		$status = ($status ? 0 : 1);
 
 		$result = dbquery("UPDATE ". DB_VIDEOS ." SET
-														video_status='". $video_status ."'
-		WHERE video_id='". $video_id ."'");
+														status='". $status ."'
+		WHERE id='". $id ."'");
 
-		redirect(FUSION_SELF . $aidlink."&status=". ($video_status ? "active" : "deactive") ."&id=". $video_id, false);
+		redirect(FUSION_SELF . $aidlink."&status=". ($status ? "active" : "deactive") ."&id=". $id, false);
 
-	} else if ($_GET['action']=="del") {
+	} else if (isset($_GET['action']) && $_GET['action']=="del") {
 
-		$result = dbquery("SELECT video_image FROM ". DB_VIDEOS ." WHERE video_id='". (INT)$_GET['id'] ."'");
+		$result = dbquery("SELECT image FROM ". DB_VIDEOS ." WHERE id='". (INT)$_GET['id'] ."'");
 		if (dbrows($result)) {
 				$data = dbarray($result);
-			if (!empty($data['video_image']) && file_exists(IMAGES_V . $data['video_image'])) { unlink(IMAGES_V . $data['video_image']); }
-			if (!empty($data['video_image']) && file_exists(IMAGES_V_T . $data['video_image'])) { unlink(IMAGES_V_T . $data['video_image']); }
+			if (!empty($data['image']) && file_exists(IMAGES_V . $data['image'])) { unlink(IMAGES_V . $data['image']); }
+			if (!empty($data['image']) && file_exists(IMAGES_V_T . $data['image'])) { unlink(IMAGES_V_T . $data['image']); }
 		} // Tesli Yest DB query
 
-		$result = dbquery("DELETE FROM ". DB_VIDEOS ." WHERE video_id='". (INT)$_GET['id'] ."'");
+		$result = dbquery("DELETE FROM ". DB_VIDEOS ." WHERE id='". (INT)$_GET['id'] ."'");
 		$result = dbquery("DELETE FROM ". DB_COMMENTS ." WHERE comment_item_id='". (INT)$_GET['id'] ."' and comment_type='V'");
 		$result = dbquery("DELETE FROM ". DB_RATINGS ." WHERE rating_item_id='". (INT)$_GET['id'] ."' and rating_type='V'");
-
-		$viewcompanent = viewcompanent("videos", "name");
-		$seourl_component = $viewcompanent['components_id'];
-		$seourl_filedid = (INT)$_GET['id'];
-
-		$result = dbquery("DELETE FROM ". DB_SEOURL ." WHERE seourl_component='". $seourl_component ."' AND seourl_filedid='". $seourl_filedid ."'");
 
 
 		///////////////// POSITIONS /////////////////
 		$position=1;
-		$result_position = dbquery("SELECT video_id FROM ". DB_VIDEOS ." ORDER BY `video_order`");
+		$result_position = dbquery("SELECT id FROM ". DB_VIDEOS ." ORDER BY `order`");
 		if (dbrows($result_position)) {
 			while ($data_position = dbarray($result_position)) {
 				$position++;
-				dbquery("UPDATE ". DB_VIDEOS ." SET video_order='". $position ."' WHERE video_id='". $data_position['video_id'] ."'");
+				dbquery("UPDATE ". DB_VIDEOS ." SET order='". $position ."' WHERE id='". $data_position['id'] ."'");
 			} // db whille
 		} // db query
 		///////////////// POSITIONS /////////////////
@@ -85,229 +80,223 @@
 
 		redirect(FUSION_SELF . $aidlink ."&status=del&id=". (INT)$_GET['id']);
 
-	} else if ($_GET['action']=="add" || $_GET['action']=="edit") {
+	} else if (isset($_GET['action']) && ($_GET['action']=="add" || $_GET['action']=="edit")) {
 
 		if (isset($_POST['save'])) {
 
-			$video_title = stripinput($_POST['video_title']);
-			$video_description = stripinput($_POST['video_description']);
-			$video_keywords = stripinput($_POST['video_keywords']);
-			$video_name = stripinput($_POST['video_name']);
-			$video_h1 = stripinput($_POST['video_h1']);
-			$video_content = stripinput($_POST['video_content']);
+			$title = stripinput($_POST['title']);
+			$description = stripinput($_POST['description']);
+			$keywords = stripinput($_POST['keywords']);
+			$name = stripinput($_POST['name']);
+			$h1 = stripinput($_POST['h1']);
+			$content = stripinput($_POST['content']);
 
-			$video_image = $_FILES['video_image']['name'];
-			$video_imagetmp  = $_FILES['video_image']['tmp_name'];
-			$video_imagesize = $_FILES['video_image']['size'];
-			$video_imagetype = $_FILES['video_image']['type'];
+			$image = $_FILES['image']['name'];
+			$imagetmp  = $_FILES['image']['tmp_name'];
+			$imagesize = $_FILES['image']['size'];
+			$imagetype = $_FILES['image']['type'];
 
-			$video_image_yest = stripinput($_POST['video_image_yest']);
-			$video_image_del = (INT)$_POST['video_image_del'];
+            $image_yest = (isset($_POST['image_yest']) ? stripinput($_POST['image_yest']) : "");
+            $image_del = (isset($_POST['image_del']) ? (INT)$_POST['image_del'] : 0);
 
 
-			$video_url = stripinput($_POST['video_url']);
-			preg_match_all("#(?<=v=|v\/|vi=|vi\/|youtu.be\/)[a-zA-Z0-9_-]{11}#", $video_url, $video_url_matches);
+			$url = stripinput($_POST['url']);
+			preg_match_all("#(?<=v=|v\/|vi=|vi\/|youtu.be\/)[a-zA-Z0-9_-]{11}#", $url, $url_matches);
 			// echo "<pre>";
-			// print_r($video_url_matches);
+			// print_r($url_matches);
 			// echo "</pre>";
 			// echo "<hr>";
-			$video_url = $video_url_matches[0][0];
+			$url = (is_array($url_matches) && !empty($url_matches[0][0]) ? $url_matches[0][0] : "");
 
-			$video_cat = stripinput($_POST['video_cat']);
-			$video_user = stripinput($_POST['video_user']);
-			if ($video_user==$userdata['user_id']) {
+			$cat = (INT)$_POST['cat'];
+			$user = (INT)$_POST['user'];
+			if ($user==$userdata['user_id']) {
 				$result_user_rand = dbquery("SELECT user_id FROM ". DB_USERS ." ORDER BY RAND() LIMIT 1");
 				$data_user_rand = dbarray($result_user_rand);
-				$video_user = $data_user_rand['user_id'];
+				$user = $data_user_rand['user_id'];
 			}
 
-			$video_access = (INT)$_POST['video_access'];
-			$video_status = (INT)$_POST['video_status'];
+			$access = (INT)$_POST['access'];
+			$status = (INT)$_POST['status'];
 
-			// if ($_GET['action']=="edit") {
-			// 	$video_order = (INT)$_POST['video_order'];
-			// } else {
-			// 	$result_order = dbquery(
-			// 		"SELECT 
-			// 									video_id,
-			// 									video_order
-			// 		FROM ". DB_VIDEOS ."
-			// 		ORDER BY video_order DESC
-			// 		LIMIT 1"
-			// 	);
-			// 	if (dbrows($result_order)) {
-			// 		$data_order = dbarray($result_order);
-			// 		$video_order = $data_order['video_order']+1;
-			// 	} else {
-			// 		$video_order = 1;
-			// 	}
-			// }
+            if (isset($_POST['date'])) {
+                $date = stripinput($_POST['date']);
+                $date = strtotime($date);
+            } else {
+                $date = FUSION_TODAY;
+            }
 
-			// $video_date = FUSION_TODAY;
-			$video_date = stripinput($_POST['video_date']);
-			$video_date = strtotime( $video_date );
-			$video_comments = (INT)$_POST['video_comments'];
-			$video_ratings = (INT)$_POST['video_ratings'];
-			if ($video_ratings<1) {
-				$video_ratings = rand(1, 5);
+            $comments = (isset($_POST['comments']) ? (INT)$_POST['comments'] : 0);
+            $ratings = (isset($_POST['ratings']) ? (INT)$_POST['ratings'] : 0);
+			if ($ratings<1) {
+				$ratings = rand(1, 5);
 			}
-			$video_views = (INT)$_POST['video_views'];
-			if ($video_views<1) {
-				$video_views = rand(1, 10000);
+			$views = (INT)$_POST['views'];
+			if ($views<1) {
+				$views = rand(1, 10000);
 			}
 
-			$video_alias = stripinput($_POST['video_alias']);
+            $alias = autocrateseourls(($_POST['alias'] ? stripinput($_POST['alias']) : $name));
 
 		} else if ($_GET['action']=="edit") {
 
-			$viewcompanent = viewcompanent("videos", "name");
-			$seourl_component = $viewcompanent['components_id'];
-
 			$result = dbquery(
 				"SELECT 
-											video_id,
-											video_title,
-											video_description,
-											video_keywords,
-											video_name,
-											video_h1,
-											video_content,
-											video_image,
-											video_url,
-											video_cat,
-											video_user,
-											video_access,
-											video_status,
-											video_date,
-											video_comments,
-											video_ratings,
-											video_views,
-											seourl_url
+											`id`,
+											`title`,
+											`description`,
+											`keywords`,
+											`name`,
+											`h1`,
+											`content`,
+											`image`,
+											`url`,
+											`cat`,
+											`user`,
+											`access`,
+											`status`,
+											`date`,
+											`comments`,
+											`ratings`,
+											`views`,
+											`alias`
 				FROM ". DB_VIDEOS ."
-				LEFT JOIN ". DB_SEOURL ." ON seourl_filedid=video_id AND seourl_component=". $seourl_component ."
-				WHERE video_id='". (INT)$_GET['id'] ."' LIMIT 1"
+				WHERE id='". (INT)$_GET['id'] ."' LIMIT 1"
 			);
 			if (dbrows($result)) {
 				$data = dbarray($result);
 
-				$video_title = unserialize($data['video_title']);
-				$video_description = unserialize($data['video_description']);
-				$video_keywords = unserialize($data['video_keywords']);
-				$video_name = unserialize($data['video_name']);
-				$video_h1 = unserialize($data['video_h1']);
-				$video_content = unserialize($data['video_content']);
-				$video_image = $data['video_image'];
-				$video_url = $data['video_url'];
-				$video_cat =  $data['video_cat'];
-				$video_user =  $data['video_user'];
-				$video_access = $data['video_access'];
-				$video_status = $data['video_status'];
-				// $video_order = $data['video_order'];
-				$video_date = $data['video_date'];
-				$video_comments = $data['video_comments'];
-				$video_ratings = $data['video_ratings'];
-				$video_views = $data['video_views'];
+				$title = $data['title'];
+				$description = $data['description'];
+				$keywords = $data['keywords'];
+				$name = $data['name'];
+				$h1 = $data['h1'];
+				$content = $data['content'];
+				$image = $data['image'];
+				$url = $data['url'];
+				$cat =  $data['cat'];
+				$user =  $data['user'];
+				$access = $data['access'];
+				$status = $data['status'];
+				// $order = $data['order'];
+				$date = $data['date'];
+				$comments = $data['comments'];
+				$ratings = $data['ratings'];
+				$views = $data['views'];
 
-				$video_alias = $data['seourl_url'];
+				$alias = $data['alias'];
 
 			} else {
 				redirect(FUSION_SELF . $aidlink);
 			}
 
+            unset($result);
+            unset($data);
+
 		} else {
 
-				$video_title = "";
-				$video_description = "";
-				$video_keywords = "";
-				$video_name = "";
-				$video_h1 = "";
-				$video_content = "";
-				$video_image = "";
-				$video_url = "";
-				$video_cat = 0;
-				$video_user = $userdata['user_id'];
-				$video_access = 0;
-				$video_status = 1;
-				// $video_order = 0;
-				$video_date = FUSION_TODAY;
-				$video_comments = "";
-				$video_ratings = 0;
-				$video_views = 0;
-				$video_alias = "";
+				$title = "";
+				$description = "";
+				$keywords = "";
+				$name = "";
+				$h1 = "";
+				$content = "";
+				$image = "";
+				$url = "";
+				$cat = 0;
+				$user = $userdata['user_id'];
+				$access = 0;
+				$status = 1;
+				// $order = 0;
+				$date = FUSION_TODAY;
+				$comments = "";
+				$ratings = 0;
+				$views = 0;
+				$alias = "";
 
 		} // Yesli POST
 
 
-		########## SEO URL OPARATIONS ##########
-		if ($settings['seourl_prefix']) {
-			$seourl_prefix_strlen =  strlen($settings['seourl_prefix']);
-			$seourl_prefix_alias = substr($video_alias, -$seourl_prefix_strlen);
-			if ($seourl_prefix_alias==$settings['seourl_prefix']) {
-				$video_alias = substr($video_alias, 0, -$seourl_prefix_strlen);
-			}
-		} // yesli yest seourl_prefix
-
-		if ($video_cat!=0) {
-			$viewcompanent = viewcompanent("video_cats", "name");
-			$seourl_component = $viewcompanent['components_id'];
-
-			foreach ($seourl as $seourl_key => $seourl_value) {
-				if ($video_cat==$seourl_value['seourl_filedid'] && $seourl_component==$seourl_value['seourl_component']) {
-					$cat_url = $seourl_value['seourl_url'];
-				}
-			}
-			if ($settings['seourl_prefix']) {
-				$seourl_prefix_strlen =  strlen($settings['seourl_prefix']);
-				$seourl_prefix_alias = substr($cat_url, -$seourl_prefix_strlen);
-				if ($seourl_prefix_alias==$settings['seourl_prefix']) {
-					$cat_url = substr($cat_url, 0, -$seourl_prefix_strlen);
-				}
-			} // yesli yest seourl_prefix
-
-			$video_alias = str_replace($cat_url ."/", "", $video_alias);
-		} else {
-			$video_alias = str_replace($settings['companent_root_url'], "", $video_alias);
-		}
-		########## //SEO URL OPARATIONS ##########
+//		########## SEO URL OPARATIONS ##########
+//		if ($settings['seourl_prefix']) {
+//			$seourl_prefix_strlen =  strlen($settings['seourl_prefix']);
+//			$seourl_prefix_alias = substr($alias, -$seourl_prefix_strlen);
+//			if ($seourl_prefix_alias==$settings['seourl_prefix']) {
+//				$alias = substr($alias, 0, -$seourl_prefix_strlen);
+//			}
+//		} // yesli yest seourl_prefix
+//
+//		if ($cat!=0) {
+////
+//			foreach ($seourl as $seourl_key => $seourl_value) {
+//				if ($cat==$seourl_value['seourl_filedid'] && $seourl_component==$seourl_value['seourl_component']) {
+//					$cat_url = $seourl_value['seourl_url'];
+//				}
+//			}
+//			if ($settings['seourl_prefix']) {
+//				$seourl_prefix_strlen =  strlen($settings['seourl_prefix']);
+//				$seourl_prefix_alias = substr($cat_url, -$seourl_prefix_strlen);
+//				if ($seourl_prefix_alias==$settings['seourl_prefix']) {
+//					$cat_url = substr($cat_url, 0, -$seourl_prefix_strlen);
+//				}
+//			} // yesli yest seourl_prefix
+//
+//			$alias = str_replace($cat_url ."/", "", $alias);
+//		} else {
+//			$alias = str_replace($settings['companent_root_url'], "", $alias);
+//		}
+//		########## //SEO URL OPARATIONS ##########
 
 
 
 		if (isset($_POST['save'])) {
 
+            $error = "";
+            if (empty($name)) { $error .= "<div class='error'>". $locale['error_001'] ."</div>\n"; }
+			if ($cat<1) { $error .= "<div class='error'>". $locale['error_002'] ."</div>\n"; }
+			if (empty($url)) { $error .= "<div class='error'>". $locale['error_003'] ."</div>\n"; }
+			// if ( ($url) && (!eregi("#(?<=v=|v\/|vi=|vi\/|youtu.be\/)[a-zA-Z0-9_-]{11}#", $url)) ) { $error .= "<div class='error'>". $locale['error_004'] ."</div>\n"; }
 
-			foreach ($languages as $key => $value) {
-				if (empty($video_name[$value['languages_short']])) { $error .= "<div class='error'>". $locale['error_001'] ." - ". $value['languages_name'] ."</div>\n"; }
-			}
-			if (!$video_cat) { $error .= "<div class='error'>". $locale['error_002'] ."</div>\n"; }
-			if (!$video_url) { $error .= "<div class='error'>". $locale['error_003'] ."</div>\n"; }
-			// if ( ($video_url) && (!eregi("#(?<=v=|v\/|vi=|vi\/|youtu.be\/)[a-zA-Z0-9_-]{11}#", $video_url)) ) { $error .= "<div class='error'>". $locale['error_004'] ."</div>\n"; }
+            if ( $_GET['action']=="edit" ) {
+                $where_error = " AND `id`!=". (INT)$_GET['id'];
+            } // if edit
+            $result_alias = dbquery(
+                "SELECT 
+											`id`
+				FROM " . DB_VIDEOS . "
+				WHERE `alias`='" . $alias . "'
+				". (isset($where_error) ? $where_error : "")
+            );
+            if (dbrows($result_alias)) {
+                $error .= "<div class='error'>" . $locale['error_005'] . "</div>\n";
+            }
 
-			if ($video_image) {
-				// if (strlen($video_image) > 255) { $error .= "<div class='error'>". $locale['error_050'] ."</div>\n"; $video_image = ""; }
+            if (isset($image) && !empty($image)) {
+				// if (strlen($image) > 255) { $error .= "<div class='error'>". $locale['error_050'] ."</div>\n"; $image = ""; }
 				// проверяем расширение файла
-				$video_image_ext = strtolower(substr($video_image, 1 + strrpos($video_image, ".")));
-				if (!in_array($video_image_ext, $photo_valid_types)) { $error .= "<div class='error'>". $locale['error_051'] ."</div>\n"; $video_image = ""; }
+				$image_ext = strtolower(substr($image, 1 + strrpos($image, ".")));
+				if (!in_array($image_ext, $photo_valid_types)) { $error .= "<div class='error'>". $locale['error_051'] ."</div>\n"; $image = ""; }
 				// 1. считаем кол-во точек в выражении - если большей одной - СВОБОДЕН!
-				$video_image_findtochka = substr_count($video_image, ".");
-				if ($video_image_findtochka>1) { $error .= "<div class='error'>". $locale['error_052'] ."</div>\n"; $video_image = ""; }
-				// 2. если в имени есть .php, .html, .htm - свободен! 
-				if (preg_match("/\.php/i",$video_image))  { $error .= "<div class='error'>". $locale['error_053'] ."</div>\n"; $video_image = ""; }
-				if (preg_match("/\.html/i",$video_image)) { $error .= "<div class='error'>". $locale['error_054'] ."</div>\n"; $video_image = ""; }
-				if (preg_match("/\.htm/i",$video_image))  { $error .= "<div class='error'>". $locale['error_055'] ."</div>\n"; $video_image = ""; }
+				$image_findtochka = substr_count($image, ".");
+				if ($image_findtochka>1) { $error .= "<div class='error'>". $locale['error_052'] ."</div>\n"; $image = ""; }
+				// 2. если в имени есть .php, .html, .htm - свободен!
+				if (preg_match("/\.php/i",$image))  { $error .= "<div class='error'>". $locale['error_053'] ."</div>\n"; $image = ""; }
+				if (preg_match("/\.html/i",$image)) { $error .= "<div class='error'>". $locale['error_054'] ."</div>\n"; $image = ""; }
+				if (preg_match("/\.htm/i",$image))  { $error .= "<div class='error'>". $locale['error_055'] ."</div>\n"; $image = ""; }
 				// 5. Размер фото
-				$video_image_fotosize = round($video_imagesize/10.24)/100; // размер ЗАГРУЖАЕМОГО ФОТО в Кб.
-				$video_image_fotomax = round($settings['videos_photo_max_b']/10.24)/100; // максимальный размер фото в Кб.
-				if ($video_image_fotosize>$video_image_fotomax) { $error .= "<div class='error'>". $locale['error_056'] ."<br />". $locale['error_057'] ." ". $video_image_fotosize ." Kb<br />". $locale['error_058'] ." ". $video_image_fotomax ." Kb</div>\n"; $video_image = ""; }
+				$image_fotosize = round($imagesize/10.24)/100; // размер ЗАГРУЖАЕМОГО ФОТО в Кб.
+				$image_fotomax = round($settings['videos_photo_max_b']/10.24)/100; // максимальный размер фото в Кб.
+				if ($image_fotosize>$image_fotomax) { $error .= "<div class='error'>". $locale['error_056'] ."<br />". $locale['error_057'] ." ". $image_fotosize ." Kb<br />". $locale['error_058'] ." ". $image_fotomax ." Kb</div>\n"; $image = ""; }
 				// // 6. "Габариты" фото > $maxwidth х $maxheight - ДО свиданья! :-)
-				$video_image_getsize = getimagesize($video_imagetmp);
-				if ($video_image_getsize[0]>$settings['videos_photo_max_w'] or $video_image_getsize[1]>$settings['videos_photo_max_h']) { $error .= "<div class='error'>". $locale['error_059'] ."<br />". $locale['error_060'] ." ". $video_image_getsize[0] ."x". $video_image_getsize[1] ."<br />". $locale['error_061'] ." ". $settings['videos_photo_max_w'] ."x". $settings['videos_photo_max_h'] ."</div>\n"; $video_image = ""; }
-				// // if ($video_image_getsize[0]<$video_image_getsize[1]) { $error .= "<div class='error'>". $locale['error_062'] ."</div>\n"; $video_image = ""; }
+				$image_getsize = getimagesize($imagetmp);
+				if ($image_getsize[0]>$settings['videos_photo_max_w'] or $image_getsize[1]>$settings['videos_photo_max_h']) { $error .= "<div class='error'>". $locale['error_059'] ."<br />". $locale['error_060'] ." ". $image_getsize[0] ."x". $image_getsize[1] ."<br />". $locale['error_061'] ." ". $settings['videos_photo_max_w'] ."x". $settings['videos_photo_max_h'] ."</div>\n"; $image = ""; }
+				// // if ($image_getsize[0]<$image_getsize[1]) { $error .= "<div class='error'>". $locale['error_062'] ."</div>\n"; $image = ""; }
 				// // Foto 0 Kb
-				// if ($video_imagesize<0 and $video_imagesize>$settings['video_size']) { $error .= "<div class='error'>". $locale['error_063'] ."</div>\n"; $video_image = ""; }
+				// if ($imagesize<0 and $imagesize>$settings['size']) { $error .= "<div class='error'>". $locale['error_063'] ."</div>\n"; $image = ""; }
 			}
 
 
-			if (isset($error)) {
+			if (isset($error) && !empty($error) ) {
 
 				echo "	<div class='admin-message'>\n";
 				echo "		<div id='close-message'>". $error ."</div>\n";
@@ -316,194 +305,142 @@
 			} else {
 
 
-				if ($video_image) {
+                if (isset($image) && !empty($image)) {
 
-					$video_image_ext = strrchr($video_image, ".");
-					$video_image = FUSION_TODAY;
-					$img_rand_key = mt_rand(100, 999);
+					$image_ext = strrchr($image, ".");
+                    $image_new_name = $alias;
 
-					if ($video_image_ext == ".gif") {
-						$video_image_filetype = 1;
-					} elseif ($video_image_ext == ".jpg") {
-						$video_image_filetype = 2;
-					} elseif ($video_image_ext == ".png") {
-						$video_image_filetype = 3;
+					if ($image_ext == ".gif") {
+						$image_filetype = 1;
+					} elseif ($image_ext == ".jpg") {
+						$image_filetype = 2;
+					} elseif ($image_ext == ".png") {
+						$image_filetype = 3;
 					} else {
-						$video_image_filetype = false; 
+						$image_filetype = false;
 					}
 
-					$video_image = image_exists(IMAGES_V, $video_image . $img_rand_key . $video_image_ext);
+					$image = image_exists(IMAGES_V, $image_new_name . $image_ext);
 
-					move_uploaded_file($video_imagetmp, IMAGES_V . $video_image);
-					// if (function_exists("chmod")) { chmod(IMAGES_V . $video_image, 0644); }
+					move_uploaded_file($imagetmp, IMAGES_V . $image);
+					// if (function_exists("chmod")) { chmod(IMAGES_V . $image, 0644); }
 
-					$video_image_size = getimagesize(IMAGES_V . $video_image);
-					$video_image_width = $video_image_size[0];
-					$video_image_height = $video_image_size[1];
+					$image_size = getimagesize(IMAGES_V . $image);
+					$image_width = $image_size[0];
+					$image_height = $image_size[1];
 
 					if ($settings['videos_thumb_ratio']==0) {
-						createthumbnail($video_image_filetype, IMAGES_V . $video_image, IMAGES_V_T . $video_image, ($video_image_width<$settings['videos_thumb_w'] ? $video_image_width : $settings['videos_thumb_w']), ($video_image_height<$settings['videos_thumb_h'] ? $video_image_height : $settings['videos_thumb_h']));
+						createthumbnail($image_filetype, IMAGES_V . $image, IMAGES_V_T . $image, ($image_width<$settings['videos_thumb_w'] ? $image_width : $settings['videos_thumb_w']), ($image_height<$settings['videos_thumb_h'] ? $image_height : $settings['videos_thumb_h']));
 					} else {
-						createsquarethumbnail($video_image_filetype, IMAGES_V . $video_image, IMAGES_V_T . $video_image, ($video_image_width<$settings['videos_thumb_w'] ? $video_image_width : $settings['videos_thumb_w']));
+						createsquarethumbnail($image_filetype, IMAGES_V . $image, IMAGES_V_T . $image, ($image_width<$settings['videos_thumb_w'] ? $image_width : $settings['videos_thumb_w']));
 					}
-					createthumbnail($video_image_filetype, IMAGES_V . $video_image, IMAGES_V . $video_image, ($video_image_width<$settings['videos_photo_w'] ? $video_image_width : $settings['videos_photo_w']));
+                    createthumbnail($image_filetype, IMAGES_V . $image, IMAGES_V . $image, ($image_width<$settings['videos_thumb_w'] ? $settings['videos_thumb_w'] : ($image_width>$settings['videos_photo_w'] ? $settings['videos_photo_w'] : $image_width)));
 
 				} else {
-					$video_image = $video_image_yest;
+					$image = $image_yest;
 				}
 
 
 
 				if ($_GET['action']=="edit") {
 
-					if ($video_image_del) {
-						if ($video_image_yest && file_exists(IMAGES_V . $video_image_yest)) { unlink(IMAGES_V . $video_image_yest); }
-						if ($video_image_yest && file_exists(IMAGES_V_T . $video_image_yest)) { unlink(IMAGES_V_T . $video_image_yest); }
-						$video_image = "";
+					if ($image_del) {
+						if ($image_yest && file_exists(IMAGES_V . $image_yest)) { unlink(IMAGES_V . $image_yest); }
+						if ($image_yest && file_exists(IMAGES_V_T . $image_yest)) { unlink(IMAGES_V_T . $image_yest); }
+						$image = "";
 					}
 
 					$result = dbquery(
 						"UPDATE ". DB_VIDEOS ." SET
-															video_title='". serialize($video_title) ."',
-															video_description='". serialize($video_description) ."',
-															video_keywords='". serialize($video_keywords) ."',
-															video_name='". serialize($video_name) ."',
-															video_h1='". serialize($video_h1) ."',
-															video_content='". serialize($video_content) ."',
-															video_image='". $video_image ."',
-															video_url='". $video_url ."',
-															video_cat='". $video_cat ."',
-															video_user='". $video_user ."',
-															video_access='". $video_access ."',
-															video_status='". $video_status ."',
-															video_date='". $video_date ."',
-															video_comments='". $video_comments ."',
-															video_ratings='". $video_ratings ."',
-															video_views='". $video_views ."'
-						WHERE video_id='". (INT)$_GET['id'] ."'"
+															title='". $title ."',
+															description='". $description ."',
+															keywords='". $keywords ."',
+															name='". $name ."',
+															h1='". $h1 ."',
+															content='". $content ."',
+															image='". $image ."',
+															url='". $url ."',
+															cat='". $cat ."',
+															user='". $user ."',
+															access='". $access ."',
+															status='". $status ."',
+															date='". $date ."',
+															comments='". $comments ."',
+															ratings='". $ratings ."',
+															views='". $views ."',
+															alias='". $alias ."'
+						WHERE id='". (INT)$_GET['id'] ."'"
 					);
-					$video_id = (INT)$_GET['id'];
+					$id = (INT)$_GET['id'];
 
 				} else {
 
 					$result = dbquery(
 						"INSERT INTO ". DB_VIDEOS ." (
-															video_title,
-															video_description,
-															video_keywords,
-															video_name,
-															video_h1,
-															video_content,
-															video_image,
-															video_url,
-															video_cat,
-															video_user,
-															video_access,
-															video_status,
-															video_date,
-															video_comments,
-															video_ratings,
-															video_views
+															`title`,
+															`description`,
+															`keywords`,
+															`name`,
+															`h1`,
+															`content`,
+															`image`,
+															`url`,
+															`cat`,
+															`user`,
+															`access`,
+															`status`,
+															`date`,
+															`comments`,
+															`ratings`,
+															`views`,
+															`alias`
 						) VALUES (
-															'". serialize($video_title) ."',
-															'". serialize($video_description) ."',
-															'". serialize($video_keywords) ."',
-															'". serialize($video_name) ."',
-															'". serialize($video_h1) ."',
-															'". serialize($video_content) ."',
-															'". $video_image ."',
-															'". $video_url ."',
-															'". $video_cat ."',
-															'". $video_user ."',
-															'". $video_access ."',
-															'". $video_status ."',
-															'". $video_date ."',
-															'". $video_comments ."',
-															'". $video_ratings ."',
-															'". $video_views ."'
+															'". $title ."',
+															'". $description ."',
+															'". $keywords ."',
+															'". $name ."',
+															'". $h1 ."',
+															'". $content ."',
+															'". $image ."',
+															'". $url ."',
+															'". $cat ."',
+															'". $user ."',
+															'". $access ."',
+															'". $status ."',
+															'". $date ."',
+															'". $comments ."',
+															'". $ratings ."',
+															'". $views ."',
+															'". $alias ."'
 						)"
 					);
-					$video_id = mysql_insert_id();
+                    $id = _DB::$linkes->insert_id;
 
 				} // UPDATE ILI INSERT
 
 
-				$viewcompanent = viewcompanent("videos", "name");
-				$seourl_component = $viewcompanent['components_id'];
-
-				// $video_alias = str_replace($settings['companent_root_url'], "", $video_alias);
-				if (empty($video_alias)) {
-					$video_alias = autocrateseourls($video_name[LOCALESHORT]);
-				} else {
-					$video_alias = autocrateseourls($video_alias);
-				}
-
-				$seourl_url = (empty($video_alias) ? "video_". $video_id . $settings['seourl_prefix'] : $video_alias . $settings['seourl_prefix']);
-				$seourl_filedid = $video_id;
-
-				$viewseourl = viewseourl($seourl_url, "url");
-
-				if ($viewseourl['seourl_url']==$seourl_url) {
-					if (($viewseourl['seourl_filedid']==$seourl_filedid) && ($viewseourl['seourl_component']==$seourl_component)) {
-						$seourl_url = $seourl_url;
-					} else {
-						$seourl_url = "video_". $video_id . $settings['seourl_prefix'];
-					}
-				}  // Yesli URL YEst
 
 
-				if ($video_cat!=0) {
-					$seourl_url = $cat_url ."/". $seourl_url;
-				} else {
-					$seourl_url = $settings['companent_root_url'] . $seourl_url;
-				}
-				$video_alias = $seourl_url;
-
-
-				if ($_GET['action']=="edit") {
-					$result = dbquery(
-						"UPDATE ". DB_SEOURL ." SET
-															seourl_url='". $seourl_url ."',
-															seourl_lastmod='". date("Y-m-d") ."'
-						WHERE seourl_filedid='". $seourl_filedid ."' AND seourl_component='". $seourl_component ."'"
-					);
-				} else {
-					$result = dbquery(
-									"INSERT INTO ". DB_SEOURL ." (
-																	seourl_url,
-																	seourl_component,
-																	seourl_filedid,
-																	seourl_lastmod
-										) VALUES (
-																	'". $seourl_url ."',
-																	'". $seourl_component ."',
-																	'". $seourl_filedid ."',
-																	'". date("Y-m-d") ."'
-										)"
-									);
-				} // Yesli action edit 
-
-
-				///////////////// POSITIONS /////////////////
-				if ( $_GET['action']=="add" ) {
-					$position=1;
-					dbquery("UPDATE ". DB_VIDEOS ." SET video_order='". $position ."' WHERE video_id='". $video_id ."'");
-					$result_position = dbquery("SELECT video_id FROM ". DB_VIDEOS ." WHERE video_id!='". $video_id ."' ORDER BY `video_order`");
-					if (dbrows($result_position)) {
-						while ($data_position = dbarray($result_position)) {
-							$position++;
-							dbquery("UPDATE ". DB_VIDEOS ." SET video_order='". $position ."' WHERE video_id='". $data_position['video_id'] ."'");
-						} // db whille
-					} // db query
-				} // Yesli action add
-				///////////////// POSITIONS /////////////////
+                ///////////////// POSITIONS /////////////////
+                if ( $_GET['action']=="add" ) {
+                    $position=1;
+                    dbquery("UPDATE ". DB_VIDEOS ." SET `order`='". $position ."' WHERE `id`='". $id ."'");
+                    $result_position = dbquery("SELECT `id` FROM ". DB_VIDEOS ." WHERE `id`!='". $id ."' ORDER BY `order`");
+                    if (dbrows($result_position)) {
+                        while ($data_position = dbarray($result_position)) {
+                            $position++;
+                            dbquery("UPDATE ". DB_VIDEOS ." SET `order`='". $position ."' WHERE `id`='". $data_position['id'] ."'");
+                        } // db whille
+                    } // db query
+                } // Yesli action add
+                ///////////////// POSITIONS /////////////////
 
 
 				////////// redirect
 				if ($_GET['action']=="edit") {
-					redirect(FUSION_SELF . $aidlink ."&status=edit&id=". $video_id ."&url=". $video_alias, false);
+					redirect(FUSION_SELF . $aidlink ."&status=edit&id=". $id ."&url=". $alias, false);
 				} else {
-					redirect(FUSION_SELF . $aidlink ."&status=add&id=". $video_id ."&url=". $video_alias, false);
+					redirect(FUSION_SELF . $aidlink ."&status=add&id=". $id ."&url=". $alias, false);
 				} ////////// redirect
 
 			} // Yesli Error
@@ -513,29 +450,28 @@
 
 		$result_cats = dbquery(
 							"SELECT
-												video_cat_id,
-												video_cat_name
+												id,
+												name
 							FROM ". DB_VIDEO_CATS ."
-							WHERE video_cat_parent=0
-							ORDER BY video_cat_name DESC");
-		$catlist = "<option value='0'". ($video_cat==0 ? " selected='selected'" : "") .">". $locale['510_a'] ."</option>\n";
+							WHERE parent=0
+							ORDER BY name DESC");
+		$catlist = "<option value='0'". ($cat==0 ? " selected='selected'" : "") .">". $locale['510_a'] ."</option>\n";
 
 		if (dbrows($result_cats)) {
 
 			$result_subcats = dbquery(
 								"SELECT
-													video_cat_id,
-													video_cat_name,
-													video_cat_parent
+													id,
+													name,
+													parent
 								FROM ". DB_VIDEO_CATS ."
-								WHERE video_cat_parent!=0
-								ORDER BY video_cat_name DESC");
+								WHERE parent!=0
+								ORDER BY name DESC");
 			$subcatlist_arr = array();
 			if (dbrows($result_subcats)) {
 				while ($data_subcats = dbarray($result_subcats)) {
-					$subcatlist_video_name = unserialize($data_subcats['video_cat_name']);
-					$subcatlist_arr[$data_subcats['video_cat_id']]['video_cat_name'] = $subcatlist_video_name[LOCALESHORT];
-					$subcatlist_arr[$data_subcats['video_cat_id']]['video_cat_parent'] = $data_subcats['video_cat_parent'];
+					$subcatlist_arr[$data_subcats['id']]['name'] = $data_subcats['name'];
+					$subcatlist_arr[$data_subcats['id']]['parent'] = $data_subcats['parent'];
 				}
 			}
 			// echo "<pre>";
@@ -544,23 +480,22 @@
 			// echo "<hr>";
 
 			while ($data_cats = dbarray($result_cats)) {
-				$catlist_video_cat_name = unserialize($data_cats['video_cat_name']);
 
 				$avaycatlist_arr = array();
 				foreach ($subcatlist_arr as $subcatlist_key => $subcatlist_value) {
-					if ($data_cats['video_cat_id']==$subcatlist_value['video_cat_parent']) {
-						$avaycatlist_arr[$subcatlist_key] = $subcatlist_value['video_cat_name'];
+					if ($data_cats['cat_id']==$subcatlist_value['parent']) {
+						$avaycatlist_arr[$subcatlist_key] = $subcatlist_value['name'];
 					}
 				}
 
 				if ($avaycatlist_arr) {
-					$catlist .= "<optgroup label='". $catlist_video_cat_name[LOCALESHORT] ."'>\n";
+					$catlist .= "<optgroup label='". $data_cats['name'] ."'>\n";
 						foreach ($avaycatlist_arr as $avaycatlist_key => $avaycatlist_value) {
-							$catlist .= "	<option value='". $avaycatlist_key ."'". ($video_cat==$avaycatlist_key ? " selected='selected'" : "") .">". $avaycatlist_value ."</option>\n";
+							$catlist .= "	<option value='". $avaycatlist_key ."'". ($cat==$avaycatlist_key ? " selected='selected'" : "") .">". $avaycatlist_value ."</option>\n";
 						}
 					$catlist .= "</optgroup>\n";
 				} else {
-					$catlist .= "<option value='". $data_cats['video_cat_id'] ."'". ($video_cat==$data_cats['video_cat_id'] ? " selected='selected'" : "") .">". $catlist_video_cat_name[LOCALESHORT] ."</option>\n";
+					$catlist .= "<option value='". $data_cats['id'] ."'". ($cat==$data_cats['id'] ? " selected='selected'" : "") .">". $data_cats['name'] ."</option>\n";
 				}
 
 			} // db whille
@@ -574,77 +509,64 @@
 		$access_opts = "";
 		$sel = "";
 		while (list($key, $user_group) = each($user_groups)) {
-			$sel = ($cat_access == $user_group['0'] ? " selected='selected'" : "");
+			$sel = ($access == $user_group['0'] ? " selected='selected'" : "");
 			$access_opts .= "<option value='". $user_group['0'] ."'$sel>". $user_group['1'] ."</option>\n";
 		} // user_groups while
 
 
 		$result_user = dbquery("SELECT user_id, user_name FROM ". DB_USERS ." ORDER BY user_name DESC");
+        $users_opts = "";
 		while ($data_user = dbarray($result_user)) {
-			$users_opts .= "<option value='". $data_user['user_id'] ."'". ($video_user==$data_user['user_id'] ? " selected='selected'" : "") .">". $data_user['user_name'] ."</option>\n";
+			$users_opts .= "<option value='". $data_user['user_id'] ."'". ($user==$data_user['user_id'] ? " selected='selected'" : "") .">". $data_user['user_name'] ."</option>\n";
 		} // while user
 
 
 
-		$ratings_opts = "<option value='0'". ($video_ratings==0 ? " selected='selected'" : "") .">". $locale['517_a'] ."</option>\n";
-		for ($ratings_i=1; $ratings_i <= 5; $ratings_i++) { 
-			$ratings_opts .= "<option value='". $ratings_i ."'". ($video_ratings==$ratings_i ? " selected='selected'" : "") .">". $ratings_i . $locale['517_b'] ."</option>\n";
+		$ratings_opts = "<option value='0'". ($ratings==0 ? " selected='selected'" : "") .">". $locale['517_a'] ."</option>\n";
+		for ($ratings_i=1; $ratings_i <= 5; $ratings_i++) {
+			$ratings_opts .= "<option value='". $ratings_i ."'". ($ratings==$ratings_i ? " selected='selected'" : "") .">". $ratings_i . $locale['517_b'] ."</option>\n";
 		}
 
 
-		if ($video_url) { $video_url = "http://www.youtube.com/watch?v=". $video_url; }
+		if ($url) { $url = "http://www.youtube.com/watch?v=". $url; }
 
 ?>
 
 	<form name='inputform' method='POST' action='<?php echo FUSION_SELF . $aidlink; ?>&action=<?php echo $_GET['action'];?><?php echo (isset($_GET['id']) && isnum($_GET['id']) ? "&id=". (INT)$_GET['id'] : ""); ?>' enctype='multipart/form-data'>
-		<input type="hidden" name="video_status" id="video_status" value="<?php echo $video_status; ?>" />
-		<input type="hidden" name="video_order" id="video_order" value="<?php echo $video_order; ?>" />
+		<input type="hidden" name="status" id="status" value="<?php echo $status; ?>" />
+		<input type="hidden" name="order" id="order" value="<?php echo $order; ?>" />
 		<table class='form_table'>
 			<tr>
 				<td colspan="2"><a href="#" id="seo_tr_button">SEO</a></td>
 			</tr>
 			<tr class="seo_tr">
 				<td colspan="2" class="seo_tr">
-					<label for="video_title_<?php echo LOCALESHORT; ?>"><?php echo $locale['501']; ?></label>
-					<?php foreach ($languages as $key => $value) { ?>
-					<?php if ($languages_count>1) { ?><span class="local_name lang_<?php echo $value['languages_short']; ?>"><?php echo $value['languages_name']; ?></span><?php } ?>
-					<input type="text" name="video_title[<?php echo $value['languages_short']; ?>]" id="video_title_<?php echo $value['languages_short']; ?>" value="<?php echo $video_title[$value['languages_short']]; ?>" class="textbox" style="width:98%;" /><br />
-					<?php } // foreach languages ?>
+					<label for="title"><?php echo $locale['501']; ?></label>
+					<input type="text" name="title" id="title" value="<?php echo $title; ?>" class="textbox" />
 				</td>
 			</tr>
 			<tr class="seo_tr">
 				<td colspan="2" class="seo_tr">
-					<label for="video_description_<?php echo LOCALESHORT; ?>"><?php echo $locale['502']; ?></label>
-					<?php foreach ($languages as $key => $value) { ?>
-					<?php if ($languages_count>1) { ?><span class="local_name lang_<?php echo $value['languages_short']; ?>"><?php echo $value['languages_name']; ?></span><?php } ?>
-					<input type="text" name="video_description[<?php echo $value['languages_short']; ?>]" id="video_description_<?php echo $value['languages_short']; ?>" value="<?php echo $video_description[$value['languages_short']]; ?>" class="textbox" style="width:98%;" /><br />
-					<?php } // foreach languages ?>
+					<label for="description"><?php echo $locale['502']; ?></label>
+					<input type="text" name="description" id="description" value="<?php echo $description; ?>" class="textbox" />
 				</td>
 			</tr>
 			<tr class="seo_tr">
 				<td colspan="2" class="seo_tr">
-					<label for="video_keywords_<?php echo LOCALESHORT; ?>"><?php echo $locale['503']; ?></label>
-					<?php foreach ($languages as $key => $value) { ?>
-					<?php if ($languages_count>1) { ?><span class="local_name lang_<?php echo $value['languages_short']; ?>"><?php echo $value['languages_name']; ?></span><?php } ?>
-					<input type="text" name="video_keywords[<?php echo $value['languages_short']; ?>]" id="video_keywords_<?php echo $value['languages_short']; ?>" value="<?php echo $video_keywords[$value['languages_short']]; ?>" class="textbox" style="width:98%;" /><br />
-					<?php } // foreach languages ?>
+					<label for="keywords"><?php echo $locale['503']; ?></label>
+					<input type="text" name="keywords" id="keywords" value="<?php echo $keywords; ?>" class="textbox" />
 				</td>
 			</tr>
 			<tr class="seo_tr">
 				<td colspan="2" class="seo_tr">
-					<label for="video_h1_<?php echo LOCALESHORT; ?>"><?php echo $locale['505']; ?></label>
-					<?php foreach ($languages as $key => $value) { ?>
-					<?php if ($languages_count>1) { ?><span class="local_name lang_<?php echo $value['languages_short']; ?>"><?php echo $value['languages_name']; ?></span><?php } ?>
-					<input type="text" name="video_h1[<?php echo $value['languages_short']; ?>]" id="video_h1_<?php echo $value['languages_short']; ?>" value="<?php echo $video_h1[$value['languages_short']]; ?>" class="textbox" style="width:98%;" /><br />
-					<?php } // foreach languages ?>
+					<label for="h1"><?php echo $locale['505']; ?></label>
+					<input type="text" name="h1" id="h1" value="<?php echo $h1; ?>" class="textbox" />
 				</td>
 			</tr>
 			<tr class="seo_tr">
 				<td colspan="2">
-					<label for="video_alias"><?php echo $locale['506']; ?></label>
-					<input readonly type="text" name="video_siteurl" id="video_siteurl" value="<?php echo $settings['siteurl'] . ($cat_url ? $cat_url ."/" : $settings['companent_root_url']); ?>" class="textbox" style="width:25%;" />
-					<input type="text" name="video_alias" id="video_alias" value="<?php echo $video_alias; ?>" class="textbox" style="width:65%;" />
-					<?php if ($settings['seourl_prefix']) { ?><input readonly type="text" name="seourl_prefix" id="seourl_prefix" value="<?php echo $settings['seourl_prefix']; ?>" class="textbox" style="width:5%;" /><?php } ?>
+					<label for="alias"><?php echo $locale['506']; ?></label>
+					<input type="text" name="alias" id="alias" value="<?php echo $alias; ?>" class="textbox" />
 				</td>
 			</tr>
 			<tr class="seo_tr">
@@ -654,90 +576,84 @@
 
 			<tr>
 				<td colspan="2">
-					<label for="video_name_<?php echo LOCALESHORT; ?>"><?php echo $locale['504']; ?> <span>*</span></label>
-					<?php foreach ($languages as $key => $value) { ?>
-					<?php if ($languages_count>1) { ?><span class="local_name lang_<?php echo $value['languages_short']; ?>"><?php echo $value['languages_name']; ?></span><?php } ?>
-					<input type="text" name="video_name[<?php echo $value['languages_short']; ?>]" id="video_name_<?php echo $value['languages_short']; ?>" value="<?php echo $video_name[$value['languages_short']]; ?>" class="textbox" style="width:98%;" /><br />
-					<?php } // foreach languages ?>
+					<label for="name"><?php echo $locale['504']; ?> <span>*</span></label>
+					<input type="text" name="name" id="name" value="<?php echo $name; ?>" class="textbox" />
 				</td>
 			</tr>
 
 			<tr>
 				<td colspan="2">
-					<label for="video_image"><?php echo $locale['507']; ?></label>
-					<?php if ($video_image && file_exists(IMAGES_V_T . $video_image)) { ?>
+					<label for="image"><?php echo $locale['507']; ?></label>
+					<?php if ($image && file_exists(IMAGES_V_T . $image)) { ?>
 					<label>
-						<img src="<?php echo IMAGES_V_T . $video_image; ?>" alt="" style="height:100px;" /><br />
-						<input type="checkbox" name="video_image_del" value="1" /> <?php echo $locale['507_b']; ?>
-						<input type="hidden" name="video_image_yest" value="<?php echo $video_image; ?>" />
+						<img src="<?php echo IMAGES_V_T . $image; ?>" alt="" style="height:100px;" /><br />
+						<input type="checkbox" name="image_del" value="1" /> <?php echo $locale['507_b']; ?>
+						<input type="hidden" name="image_yest" value="<?php echo $image; ?>" />
 					</label>
 					<?php } else { ?>
-					<input type="file" name="video_image" id="video_image" class="filebox" style="width:98%;" accept="image/*" />
-					<div id="video_image_preview"></div>
+					<input type="file" name="image" id="image" class="filebox" style="width:98%;" accept="image/*" />
+					<div id="image_preview"></div>
 					<?php echo sprintf($locale['507_a'], parsebytesize($settings['videos_photo_max_b'], 3)); ?>
 					<?php }	?>
 				</td>
 			</tr>
 			<tr>
 				<td colspan="2">
-					<label for="video_url"><?php echo $locale['508']; ?> <span>*</span></label>
-					<input type="text" name="video_url" id="video_url" value="<?php echo $video_url; ?>" class="textbox" style="width:98%;" />
+					<label for="url"><?php echo $locale['508']; ?> <span>*</span></label>
+					<input type="text" name="url" id="url" value="<?php echo $url; ?>" class="textbox" style="width:98%;" />
 					<?php echo $locale['508_a']; ?>
 				</td>
 			</tr>
 
 			<tr>
 				<td colspan="2">
-					<label for="video_content_<?php echo LOCALESHORT; ?>"><?php echo $locale['509']; ?></label>
-					<?php foreach ($languages as $key => $value) { ?>
-					<?php if ($languages_count>1) { ?><span class="local_name lang_<?php echo $value['languages_short']; ?>"><?php echo $value['languages_name']; ?></span><?php } ?>
-					<textarea id="editor<?php echo $value['languages_id']; ?>" name="video_content[<?php echo $value['languages_short']; ?>]" id="video_content<?php echo $value['languages_short']; ?>" class="textareabox" cols="95" rows="15" style="width:100%"><?php echo $video_content[$value['languages_short']]; ?></textarea><br />
-					<?php } // foreach languages ?>
+					<label for="content"><?php echo $locale['509']; ?></label>
+					<textarea id="editor" name="content" id="content" class="textareabox" cols="95" rows="15" style="width:100%"><?php echo $content; ?></textarea>
 				</td>
 			</tr>
 			<?php if (!$settings['tinymce_enabled']) { ?>
 			<tr>
 				<td colspan="2">
-					<?php echo display_html("inputform", "video_content", true, true, true, IMAGES_N); ?>
+					<?php echo display_html("inputform", "content", true, true, true, IMAGES_N); ?>
 				</td>
 			</tr>
 			<?php } ?>
 			<tr>
 				<td>
-					<label for="video_access"><?php echo $locale['511']; ?></label>
-					<select name="video_access" id="video_access" class="selectbox" style="width:25%;">
+					<label for="access"><?php echo $locale['511']; ?></label>
+					<select name="access" id="access" class="selectbox" style="width:25%;">
 						<?php echo $access_opts; ?>
 					</select>
 				</td>
 				<td>
-					<label for="video_cat"><?php echo $locale['510']; ?> <span>*</span></label>
-					<select name="video_cat" id="video_cat" class="selectbox" style="width:25%;">
+					<label for="cat"><?php echo $locale['510']; ?> <span>*</span></label>
+					<select name="cat" id="cat" class="selectbox" style="width:25%;">
 						<?php echo $catlist; ?>
 					</select>
 				</td>
 			</tr>
 			<tr>
 				<td>
-					<label for="video_user"><?php echo $locale['515']; ?></label>
-					<select name="video_user" id="video_user" class="selectbox" style="width:25%;">
+					<label for="user"><?php echo $locale['515']; ?></label>
+					<select name="user" id="user" class="selectbox" style="width:25%;">
 						<?php echo $users_opts; ?>
 					</select>
 				</td>
 				<td>
-					<label for="video_date"><?php echo $locale['516']; ?></label>
-					<input type="text" name="video_date" id="video_date" value="<?php echo date("d.m.Y", $video_date); ?>" class="textbox" style="width:25%;" />
+					<label for="date"><?php echo $locale['516']; ?></label>
+					<input type="text" name="date" id="date" value="<?php echo date("d.m.Y", $date); ?>" class="textbox" style="width:25%;" />
 				</td>
 			</tr>
 			<tr>
 				<td>
-					<label for="video_ratings"><?php echo $locale['517']; ?></label>
-					<select name="video_ratings" id="video_ratings" class="selectbox" style="width:25%;">
+					<label for="ratings"><?php echo $locale['517']; ?></label>
+					<select name="ratings" id="ratings" class="selectbox" style="width:25%;">
 						<?php echo $ratings_opts; ?>
 					</select>
 				</td>
 				<td>
-					<label for="video_views"><?php echo $locale['518']; ?></label>
-					<input type="text" name="video_views" id="video_views" value="<?php echo $video_views; ?>" class="textbox" style="width:25%;" />
+					<label for="views"><?php echo $locale['518']; ?></label>
+					<input type="text" name="views" id="views" value="<?php echo $views; ?>" class="textbox" style="width:25%;" />
 				</td>
 			</tr>
 
@@ -745,10 +661,10 @@
 			<tr>
 				<td colspan="2">
 					<?php if ($settings['comments_enabled']) { ?>
-					<label><input type='checkbox' name='video_comments' value='1'<?php echo ($video_comments ? " checked='checked" : ""); ?> /> <?php echo $locale['510']; ?></label><br />
+					<label><input type='checkbox' name='comments' value='1'<?php echo ($comments ? " checked='checked" : ""); ?> /> <?php echo $locale['510']; ?></label><br />
 					<?php } ?>
 					<?php if ($settings['ratings_enabled']) { ?>
-					<label><input type='checkbox' name='video_ratings' value='1'<?php echo ($video_ratings ? " checked='checked" : ""); ?> /> <?php echo $locale['511']; ?></label><br />
+					<label><input type='checkbox' name='ratings' value='1'<?php echo ($ratings ? " checked='checked" : ""); ?> /> <?php echo $locale['511']; ?></label><br />
 					<?php } ?>
 				</td>
 			</tr>
@@ -766,7 +682,7 @@
 
 		<script type='text/javascript'>
 		<?php
-		if ($settings['tinymce_enabled']) { 
+		if ($settings['tinymce_enabled']) {
 			foreach ($languages as $key => $value) {
 		?>
 			var ckeditor<?php echo $value['languages_id']; ?> = CKEDITOR.replace('editor<?php echo $value['languages_id']; ?>');
@@ -785,8 +701,8 @@ add_to_footer ("<script  type='text/javascript' src='". ADMINTHEME ."js/datepick
 add_to_footer ("<script type='text/javascript'>
 	<!--
 	$(function() {
-		$( '#video_date' ).inputmask( 'd.m.y' );
-		$( '#video_date' ).datepicker({ dateFormat: 'dd.mm.yy' });
+		$( '#date' ).inputmask( 'd.m.y' );
+		$( '#date' ).datepicker({ dateFormat: 'dd.mm.yy' });
 	});
 	//-->
 </script>");
@@ -796,26 +712,26 @@ add_to_head ("<link rel='stylesheet' href='". ADMINTHEME ."css/datepicker.css' t
 
 	} else {
 
-	if ($_GET['status']) {
-		if ($_GET['status']=="add") {
+	if (isset($_GET['status'])) {
+		if (isset($_GET['status']) && $_GET['status']=="add") {
 
 			$message = "<div class='success'>". $locale['success_002'] ." ID: ". intval($_GET['id']) ."</div>\n";
 			$message .= "<div class='success'>". $locale['success_001'] ."<a href='". $settings['siteurl'] . $_GET['url'] ."' target='_blank'>". $_GET['url'] ."</a></div>\n";
 
-		} elseif ($_GET['status']=="edit") {
+		} elseif (isset($_GET['status']) && $_GET['status']=="edit") {
 
 			$message = "<div class='success'>". $locale['success_003'] ." ID: ". intval($_GET['id']) ."</div>\n";
 			$message .= "<div class='success'>". $locale['success_001'] ."<a href='". $settings['siteurl'] . $_GET['url'] ."' target='_blank'>". $settings['siteurl'] . $_GET['url'] ."</a></div>\n";
 
-		} elseif ($_GET['status']=="del") {
+		} elseif (isset($_GET['status']) && $_GET['status']=="del") {
 
 			$message = "<div class='success'>". $locale['success_004'] ." ID: ". intval($_GET['id']) ."</div>\n";
 
-		} elseif ($_GET['status']=="active") {
+		} elseif (isset($_GET['status']) && $_GET['status']=="active") {
 
 			$message = "<div class='success'>". $locale['success_005'] ." ID: ". intval($_GET['id']) ."</div>\n";
 
-		} elseif ($_GET['status']=="deactive") {
+		} elseif (isset($_GET['status']) && $_GET['status']=="deactive") {
 
 			$message = "<div class='success'>". $locale['success_006'] ." ID: ". intval($_GET['id']) ."</div>\n";
 
@@ -824,7 +740,7 @@ add_to_head ("<link rel='stylesheet' href='". ADMINTHEME ."css/datepicker.css' t
 	} // status
 
 	echo "	<div class='admin-message'>\n";
-	if ($message) {
+	if (isset($message)) {
 	echo "		<div id='close-message'>". $message ."</div>\n";
 	} // message
 	echo "	</div>\n";
@@ -862,20 +778,21 @@ add_to_head("<script type='text/javascript'>
 
 
 <?php
-	$viewcompanent = viewcompanent("videos", "name");
-	$seourl_component = $viewcompanent['components_id'];
+//	$viewcompanent = viewcompanent("videos", "name");
+//	$seourl_component = $viewcompanent['components_id'];
 
 	$result = dbquery("SELECT 
-								video_id,
-								video_name,
-								video_order,
-								video_status,
-								seourl_url
-		FROM ". DB_VIDEOS ."
-		LEFT JOIN ". DB_SEOURL ." ON seourl_filedid=video_id AND seourl_component=". $seourl_component ."
-		WHERE ". groupaccess('video_access') ."
-		ORDER BY video_order
-		LIMIT ". (INT)$_GET['rowstart'] .", ". $settings['videos_per_page'] ."");
+								v.id,
+								v.name,
+								v.order,
+								v.status,
+								v.alias as v_alias,
+								vc.alias as vc_alias
+		FROM ". DB_VIDEOS ."  v
+		LEFT JOIN ". DB_VIDEO_CATS ." vc ON vc.id=v.cat
+		WHERE ". groupaccess('v.access') ."
+		ORDER BY v.order
+		LIMIT ". (isset($_GET['rowstart']) ? (INT)$_GET['rowstart'] : 0) .", ". $settings['videos_per_page']);
 
 	echo "<a href='". FUSION_SELF . $aidlink ."&action=add' class='add_page'>". $locale['010'] ."</a><br />\n";
 ?>
@@ -894,19 +811,18 @@ add_to_head("<script type='text/javascript'>
 	<?php
 		if (dbrows($result)) {
 			while ($data = dbarray($result)) {
-				$video_name = unserialize($data['video_name']);
 	?>
-			<tr id="listItem_<?php echo $data['video_id']; ?>">
+			<tr id="listItem_<?php echo $data['id']; ?>">
 				<td class="list"><img src="<?php echo IMAGES; ?>arrow.png" alt="<?php echo $locale['410']; ?>" class="handle" /></td>
-				<td class="name"><a href="<?php echo FUSION_SELF . $aidlink; ?>&action=edit&id=<?php echo $data['video_id']; ?>" title="<?php echo $video_name[LOCALESHORT]; ?>"><?php echo $video_name[LOCALESHORT]; ?></a></td>
+				<td class="name"><a href="<?php echo FUSION_SELF . $aidlink; ?>&action=edit&id=<?php echo $data['id']; ?>" title="<?php echo $data['name']; ?>"><?php echo $data['name']; ?></a></td>
 				<td class="status">
-					<a href="<?php echo FUSION_SELF . $aidlink; ?>&action=status&id=<?php echo $data['video_id']; ?>&status=<?php echo $data['video_status']; ?>" title="<?php echo ($data['video_status'] ? $locale['411'] : $locale['412']); ?>"><img src="<?php echo IMAGES; ?>status/status_<?php echo $data['video_status']; ?>.png" alt="<?php echo ($data['video_id'] ? $locale['411'] : $locale['412']); ?>"></a>
+					<a href="<?php echo FUSION_SELF . $aidlink; ?>&action=status&id=<?php echo $data['id']; ?>&status=<?php echo $data['status']; ?>" title="<?php echo ($data['status'] ? $locale['411'] : $locale['412']); ?>"><img src="<?php echo IMAGES; ?>status/status_<?php echo $data['status']; ?>.png" alt="<?php echo ($data['id'] ? $locale['411'] : $locale['412']); ?>"></a>
 				</td>
-				<td class="num"><?php echo $data['video_order']; ?></td>
+				<td class="num"><?php echo $data['order']; ?></td>
 				<td class="links">
-					<a href="<?php echo BASEDIR . $data['seourl_url']; ?>" target="_blank" title="<?php echo $locale['413']; ?>"><img src="<?php echo IMAGES; ?>view.png" alt="<?php echo $locale['413']; ?>"></a>
-					<a href="<?php echo FUSION_SELF . $aidlink; ?>&action=edit&id=<?php echo $data['video_id']; ?>" title="<?php echo $locale['414']; ?>"><img src="<?php echo IMAGES; ?>edit.png" alt="<?php echo $locale['414']; ?>"></a>
-					<a href="<?php echo FUSION_SELF . $aidlink; ?>&action=del&id=<?php echo $data['video_id']; ?>" title="<?php echo $locale['415']; ?>" onclick="return DeleteOk();"><img src="<?php echo IMAGES; ?>delete.png" alt="<?php echo $locale['415']; ?>"></a>
+					<a href="/videos/<?php echo $data['vc_alias'] ."/". $data['v_alias']; ?>" target="_blank" title="<?php echo $locale['413']; ?>"><img src="<?php echo IMAGES; ?>view.png" alt="<?php echo $locale['413']; ?>"></a>
+					<a href="<?php echo FUSION_SELF . $aidlink; ?>&action=edit&id=<?php echo $data['id']; ?>" title="<?php echo $locale['414']; ?>"><img src="<?php echo IMAGES; ?>edit.png" alt="<?php echo $locale['414']; ?>"></a>
+					<a href="<?php echo FUSION_SELF . $aidlink; ?>&action=del&id=<?php echo $data['id']; ?>" title="<?php echo $locale['415']; ?>" onclick="return DeleteOk();"><img src="<?php echo IMAGES; ?>delete.png" alt="<?php echo $locale['415']; ?>"></a>
 				</td>
 			</tr>
 	<?php
@@ -918,13 +834,16 @@ add_to_head("<script type='text/javascript'>
 			</tr>
 	<?php
 		} // db query
+
+    unset($result);
+    unset($data);
 	?>
 		</tbody>
 		<tfoot>
 			<tr>
 				<td colspan="5">
-<?php 
-	$rows = dbcount("(video_id)", DB_VIDEOS);
+<?php
+	$rows = dbcount("(id)", DB_VIDEOS);
 	if ($rows > $settings['videos_per_page']) { echo makepagenav((INT)$_GET['rowstart'], $settings['videos_per_page'], $rows, 3, ADMIN . FUSION_SELF . $aidlink ."&amp;") ."\n"; }
 ?>
 				</td>
@@ -942,7 +861,9 @@ add_to_head("<script type='text/javascript'>
 	} // action
 
 
-	if ($_GET['action']!="order") {
+    if ( isset($_GET['action']) && $_GET['action']=="order") {
+
+    } else {
 		closetable();
 
 		require_once THEMES."templates/footer.php";

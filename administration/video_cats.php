@@ -75,11 +75,6 @@
 
 			$result = dbquery("DELETE FROM ". DB_VIDEO_CATS ." WHERE id='". (INT)$_GET['id'] ."'");
 
-			$viewcompanent = viewcompanent("video_cats", "name");
-			$seourl_component = $viewcompanent['components_id'];
-			$seourl_filedid = (INT)$_GET['id'];
-
-			$result = dbquery("DELETE FROM ". DB_SEOURL ." WHERE seourl_component='". $seourl_component ."' AND seourl_filedid='". $seourl_filedid ."'");
 
 			///////////////// POSITIONS /////////////////
 			$position=1;
@@ -113,12 +108,18 @@
 			$imagetype = $_FILES['image']['type'];
 
             $image_yest = (isset($_POST['image_yest']) ? stripinput($_POST['image_yest']) : "");
-            $image_del = (isset($_POST['image_del']) ? stripinput($_POST['image_del']) : "");
+            $image_del = (isset($_POST['image_del']) ? (INT)$_POST['image_del'] : 0);
 
 			$parent = stripinput($_POST['parent']);
 			$access = (INT)$_POST['access'];
 			$status = (INT)$_POST['status'];
-			$date = FUSION_TODAY;
+
+            if (isset($_POST['date'])) {
+                $date = stripinput($_POST['date']);
+                $date = strtotime($date);
+            } else {
+                $date = FUSION_TODAY;
+            }
 
             $alias = autocrateseourls(($_POST['alias'] ? stripinput($_POST['alias']) : $name));
 
@@ -217,11 +218,11 @@
 				if (preg_match("/\.htm/i",$image))  { $error .= "<div class='error'>". $locale['error_055'] ."</div>\n"; $image = ""; }
 				// 5. Размер фото
 				$image_fotosize = round($imagesize/10.24)/100; // размер ЗАГРУЖАЕМОГО ФОТО в Кб.
-				$image_fotomax = round($settings['photo_max_b']/10.24)/100; // максимальный размер фото в Кб.
+				$image_fotomax = round($settings['video_cats_photo_max_b']/10.24)/100; // максимальный размер фото в Кб.
 				if ($image_fotosize>$image_fotomax) { $error .= "<div class='error'>". $locale['error_056'] ."<br />". $locale['error_057'] ." ". $image_fotosize ." Kb<br />". $locale['error_058'] ." ". $image_fotomax ." Kb</div>\n"; $image = ""; }
 				// // 6. "Габариты" фото > $maxwidth х $maxheight - ДО свиданья! :-)
 				$image_getsize = getimagesize($imagetmp);
-				if ($image_getsize[0]>$settings['photo_max_w'] or $image_getsize[1]>$settings['photo_max_h']) { $error .= "<div class='error'>". $locale['error_059'] ."<br />". $locale['error_060'] ." ". $image_getsize[0] ."x". $image_getsize[1] ."<br />". $locale['error_061'] ." ". $settings['photo_max_w'] ."x". $settings['photo_max_h'] ."</div>\n"; $image = ""; }
+				if ($image_getsize[0]>$settings['video_cats_photo_max_w'] or $image_getsize[1]>$settings['video_cats_photo_max_h']) { $error .= "<div class='error'>". $locale['error_059'] ."<br />". $locale['error_060'] ." ". $image_getsize[0] ."x". $image_getsize[1] ."<br />". $locale['error_061'] ." ". $settings['photo_max_w'] ."x". $settings['photo_max_h'] ."</div>\n"; $image = ""; }
 				// // if ($image_getsize[0]<$image_getsize[1]) { $error .= "<div class='error'>". $locale['error_062'] ."</div>\n"; $image = ""; }
 				// // Foto 0 Kb
 				// if ($imagesize<0 and $imagesize>$settings['size']) { $error .= "<div class='error'>". $locale['error_063'] ."</div>\n"; $image = ""; }
@@ -268,7 +269,7 @@
 					} else {
 						createsquarethumbnail($image_filetype, IMAGES_VC . $image, IMAGES_VC_T . $image, ($image_width<$settings['video_cats_thumb_w'] ? $image_width : $settings['video_cats_thumb_w']));
 					}
-					createthumbnail($image_filetype, IMAGES_VC . $image, IMAGES_VC . $image, ($image_width<$settings['video_cats_thumb_w'] ? $image_width : $settings['video_cats_thumb_w']));
+					createthumbnail($image_filetype, IMAGES_VC . $image, IMAGES_VC . $image, ($image_width<$settings['video_cats_thumb_w'] ? $settings['video_cats_thumb_w'] : ($image_width>$settings['video_cats_photo_w'] ? $settings['video_cats_photo_w'] : $image_width)));
 
 				} else {
 					$image = $image_yest;
@@ -334,8 +335,6 @@
 					);
 					$id = _DB::$linkes->insert_id;
 
-                    debug($result);
-
 				} // UPDATE ILI INSERT
 
 
@@ -356,12 +355,12 @@
 				///////////////// POSITIONS /////////////////
 
 
-//				////////// redirect
-//				if ($_GET['action']=="edit") {
-//					redirect(FUSION_SELF . $aidlink ."&status=edit&id=". $id ."&url=". $alias, false);
-//				} else {
-//					redirect(FUSION_SELF . $aidlink ."&status=add&id=". $id ."&url=". $alias, false);
-//				} ////////// redirect
+				////////// redirect
+				if ($_GET['action']=="edit") {
+					redirect(FUSION_SELF . $aidlink ."&status=edit&id=". $id ."&url=". $alias, false);
+				} else {
+					redirect(FUSION_SELF . $aidlink ."&status=add&id=". $id ."&url=". $alias, false);
+				} ////////// redirect
 
 			} // Yesli Error
 
@@ -427,9 +426,7 @@
 			<tr class="seo_tr">
 				<td colspan="2">
 					<label for="alias"><?php echo $locale['506']; ?></label>
-					<input readonly type="text" name="siteurl" id="siteurl" value="<?php echo $settings['siteurl'] . (isset($parent_url) ? $parent_url ."/" : $settings['companent_root_url']); ?>" class="textbox" style="width:25%;" />
-					<input type="text" name="alias" id="alias" value="<?php echo $alias; ?>" class="textbox" style="width:65%;" />
-					<?php if ($settings['seourl_prefix']) { ?><input readonly type="text" name="seourl_prefix" id="seourl_prefix" value="<?php echo $settings['seourl_prefix']; ?>" class="textbox" style="width:5%;" /><?php } ?>
+					<input type="text" name="alias" id="alias" value="<?php echo $alias; ?>" class="textbox" />
 				</td>
 			</tr>
 			<tr class="seo_tr">
@@ -648,6 +645,7 @@ add_to_footer("<script type='text/javascript'>
                                         `alias`
 		FROM ". DB_VIDEO_CATS ."
 		WHERE parent=0
+		ORDER BY `order` ASC
 		LIMIT ". $rowstvideo .", ". $settings['video_cats_per_page']);
 
 	echo "<a href='". FUSION_SELF . $aidlink ."&action=add' class='add_page'>". $locale['010'] ."</a><br />\n";

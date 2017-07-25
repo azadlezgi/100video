@@ -14,7 +14,7 @@
 										ORDER BY `order`");
 		if (dbrows($result)) {
 			while ($data = dbarray($result)) {
-				echo "<li class='". str_replace("/", "_", $data['alias']) . (FUSION_URI=="/". $data['url'] ? " active" : "") ."'><a href='". $datavideo_cat['seourl_url'] ."'>". $data['name'] ." <i class='fa fa-play-circle-o'></i></a></li>\n";
+				echo "<li class='". str_replace("/", "_", $data['alias']) . (FUSION_URI=="/videos/". $data['alias'] ? " active" : "") ."'><a href='/videos/". $data['alias'] ."'>". $data['name'] ." <i class='fa fa-play-circle-o'></i></a></li>\n";
 			} // while dbarray
 		} // if dbrows
 
