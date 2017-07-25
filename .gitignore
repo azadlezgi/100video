@@ -1,0 +1,7 @@
+# Created by .ignore support plugin (hsz.mobi)
+!.gitignore
+.idea/
+cgi-bin/
+sites/site1/cache/*
+!sites/site1/cache/index.php
+sites/site1/uploads/*
