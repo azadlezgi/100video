@@ -7,90 +7,84 @@ require_once INCLUDES."ratings_include.php";
 include LOCALE.LOCALESET."videos.php";
 
 
-$viewcompanent = viewcompanent("videos", "name");
-$seourl_component = $viewcompanent['components_id'];
+
 
 $result = dbquery("SELECT 
-								title,
-								description,
-								keywords,
-								name,
-								url,
-								cat,
-								h1,
-								access,
-								content,
-								comments,
-								ratings,
-								views,
-								user,
-								date,
-								url
+								`title`,
+								`description`,
+								`keywords`,
+								`name`,
+								`url`,
+								`cat`,
+								`h1`,
+								`access`,
+								`content`,
+								`comments`,
+								`ratings`,
+								`views`,
+								`user`,
+								`date`,
+								`url`
 FROM ". DB_VIDEOS ."
-LEFT JOIN ". DB_SEOURL ." ON seourl_filedid=id AND seourl_component=". $seourl_component ."
-WHERE id='". $filedid ."'
+WHERE alias='". $alias ."'
 AND ". groupaccess('access') ."
 AND status='1'
 AND date<'". FUSION_TODAY ."'");
 if (dbrows($result)) {
 	$data = dbarray($result);
 
-	$title = unserialize($data['title']);
-	$description = unserialize($data['description']);
-	$keywords = unserialize($data['keywords']);
-	$name = unserialize($data['name']);
+	$title = $data['title'];
+	$description = $data['description'];
+	$keywords = $data['keywords'];
+	$name = $data['name'];
 	$url = $data['url'];
 	$cat = $data['cat'];
-	$h1 = unserialize($data['h1']);
+	$h1 = $data['h1'];
 	$access = $data['access'];
-	$content = unserialize($data['content']);
+	$content = $data['content'];
 	$comments = $data['comments'];
 	$ratings = $data['ratings'];
 	$date = $data['date'];
 	$views = $data['views'];
 	$user = $data['user'];
-	$seourl_url = $data['seourl_url'];
 
-	set_title( ($title[LOCALESHORT] ? $title[LOCALESHORT] : $name[LOCALESHORT]) );
-	set_meta("description",  ($description[LOCALESHORT] ? $description[LOCALESHORT] : "") );
-	set_meta("keywords",  ($keywords[LOCALESHORT] ? $keywords[LOCALESHORT] : "") );
-	add_to_head ("<link rel='canonical' href='http://". FUSION_HOST ."/". ($settings['opening_page']!=$seourl_url ? $seourl_url : "") ."' />");
-	add_to_head ("<meta name='robots' content='index, follow' />");
-	add_to_head ("<meta name='author' content='IssoHost' />");
-
+	set_title( ($title ? $title : $name) );
+	set_meta("description",  ($description ? $description : "") );
+	set_meta("keywords",  ($keywords ? $keywords : "") );
+//	add_to_head ("<link rel='canonical' href='http://". FUSION_HOST ."/". ($settings['opening_page']!=$seourl_url ? $seourl_url : "") ."' />");
+//	add_to_head ("<meta name='robots' content='index, follow' />");
+//	add_to_head ("<meta name='author' content='IssoHost' />");
 
 
-	// $viewcompanent = viewcompanent("cats", "name");
-	// $seourl_component = $viewcompanent['components_id'];
 
-	// $c_result = dbquery("SELECT 
-	// 								cat_name,
-	// 								seourl_url
-	// FROM ". DB_CATS ."
-	// LEFT JOIN ". DB_SEOURL ." ON seourl_filedid=cat_id AND seourl_component=". $seourl_component ."
-	// WHERE cat_id='". $cat ."'");
-	// if (dbrows($c_result)) {
-	// 	$c_data = dbarray($c_result);
-	// 	$cat_name = unserialize($c_data['cat_name']);
-	// } // db query 
+
 		
 
 
-	// if (FUSION_URI!="/") {
-	// echo "<div class='breadcrumb'>\n";
-	// echo "	<ul>\n";
-	// echo "		<li><a href='". BASEDIR ."'>". $locale['640'] ."</a></li>\n";
-	// echo "		<li><a href='". BASEDIR . $c_data['seourl_url'] ."'>". $cat_name[LOCALESHORT] ."</a></li>\n";
-	// echo "		<li><span>". $name[LOCALESHORT] ."</span></li>\n";
-	// echo "	</ul>\n";
-	// echo "</div>\n";
-	// }
+	 if (FUSION_URI!="/") {
+	 echo "<div class='breadcrumb'>\n";
+	 echo "	<ul>\n";
+	 echo "		<li><a href='/'>". $locale['640'] ."</a> <i class='fa fa-angle-double-right'></i></li>\n";
+
+     $breadcrumb_result = dbquery("SELECT 
+                                `name`,
+                                `alias`
+                  FROM ". DB_VIDEO_CATS ."
+                  WHERE id='". $cat ."'");
+     if (dbrows($breadcrumb_result)) {
+         $breadcrumb_data = dbarray($breadcrumb_result);
+	 echo "		<li><a href='/videos/". $breadcrumb_data['alias'] ."'>". $breadcrumb_data['name'] ."</a> <i class='fa fa-angle-double-right'></i></li>\n";
+     } // db query
+	 echo "		<li><span>". $name ."</span></li>\n";
+	 echo "	</ul>\n";
+	 echo "</div>\n";
+	 }
 
 
-	if ($h1[LOCALESHORT]) {
-		opentable($h1[LOCALESHORT]);
+	if ($h1) {
+		opentable($h1);
 	} else {
-		opentable($name[LOCALESHORT]);
+		opentable($name);
 	}
 
 	if (checkgroup($access)) {
@@ -102,14 +96,15 @@ if (dbrows($result)) {
 			$user_name = $data_user['user_name'];
 		}
 
-	add_to_footer ('<script type="text/javascript" src="'. INCLUDES.'player/swfobject.js"></script>');
-add_to_footer ('
-<script type="text/javascript"> 
-	var flashvars = { "file":"http://www.youtube.com/watch?v='. $url .'","poster":"http://i3.ytimg.com/vi/'. $url .'/hqdefault.jpg","st":"'. INCLUDES. 'player/uppod.txt"}; 
-	var params = {bgcolor:"#ffffff", wmode:"window", allowFullScreen:"true", allowScriptAccess:"always"}; 
-	swfobject.embedSWF("'. INCLUDES. 'player/uppod.swf", "videoplayer", "100%", "450", "10.0.0.0", false, flashvars, params); 
-</script>
-');
+
+//	add_to_footer ('<script type="text/javascript" src="'. INCLUDES.'player/swfobject.js"></script>');
+//add_to_footer ('
+//<script type="text/javascript">
+//	var flashvars = { "file":"http://www.youtube.com/watch?v='. $url .'","poster":"http://i3.ytimg.com/vi/'. $url .'/hqdefault.jpg","st":"'. INCLUDES. 'player/uppod.txt"};
+//	var params = {bgcolor:"#ffffff", wmode:"window", allowFullScreen:"true", allowScriptAccess:"always"};
+//	swfobject.embedSWF("'. INCLUDES. 'player/uppod.swf", "videoplayer", "100%", "450", "10.0.0.0", false, flashvars, params);
+//</script>
+//');
 
 	// add_to_footer ("<script type='text/javascript' src='". INCLUDES. "player/uppod.js'></script>");
 	// add_to_footer ('<script type="text/javascript">this.player = new Uppod({m:"video",uid:"videoplayer",file:"https://www.youtube.com/embed/'. $url .'",poster:"http://i3.ytimg.com/vi/'. $url .'/hqdefault.jpg",st:"'. INCLUDES. 'player/uppod.txt"});</script>');
@@ -118,9 +113,9 @@ add_to_footer ('
 
 
 <div class="page">
-	<div class="player" id="videoplayer"></div>
+<!--	<div class="player" id="videoplayer"></div>-->
 
-	<!-- <iframe src="https://www.youtube.com/embed/<?php echo $url; ?>" width="100%" height="450" frameborder="0" allowfullscreen></iframe> -->
+    <iframe width="100%" height="450" src="https://xhamster.com/xembed.php?video=<?=$url?>" frameborder="0" scrolling="no" allowfullscreen></iframe>
 	<div class="videos_media"> 
 		<span class="user"><a href="/videouser/user_<?php echo $user_id; ?>"><i class="fa fa-user"></i> <?php echo $user_name; ?></a></span>
 		<span class="calendar"><i class="fa fa-calendar"></i> <?php echo date("d.m.Y", $date); ?></span>

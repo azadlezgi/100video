@@ -1,6 +1,6 @@
 <?php if (!defined("IN_FUSION")) { die("Access Denied"); }
 
-//if ($component_id!=2) {
+if ($component!="videos") {
 ?>
 <div class="left_catalog">
 	<?php openside("Категории"); ?>
@@ -26,4 +26,4 @@
 
 	<?php closeside(); ?>
 </div>
-<?php //} ?>
+<?php } ?>

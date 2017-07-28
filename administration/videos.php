@@ -101,12 +101,23 @@
 
 
 			$url = stripinput($_POST['url']);
-			preg_match_all("#(?<=v=|v\/|vi=|vi\/|youtu.be\/)[a-zA-Z0-9_-]{11}#", $url, $url_matches);
-			// echo "<pre>";
-			// print_r($url_matches);
-			// echo "</pre>";
-			// echo "<hr>";
-			$url = (is_array($url_matches) && !empty($url_matches[0][0]) ? $url_matches[0][0] : "");
+
+            if ( preg_match_all("#(?<=v=|v\/|vi=|vi\/|youtu.be\/)[a-zA-Z0-9_-]{11}#", $url, $url_matches) ) {
+                $url = (is_array($url_matches) && !empty($url_matches[0][0]) ? $url_matches[0][0] : "");
+            }
+
+            if ( preg_match("/xhamster.com/", $url) ) {
+                $url = explode("?video=", $url);
+                if(isset($url[1])) {
+                    $url = trim($url[1]);
+                } else {
+                    $url = explode("/movies/", $url[0]);
+                    $url = explode("/", $url[1]);
+                    $url = trim($url[0]);
+                }
+            } // if xhamster
+
+
 
 			$cat = (INT)$_POST['cat'];
 			$user = (INT)$_POST['user'];

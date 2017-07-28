@@ -295,7 +295,19 @@ section aside {
 
 
 .breadcrumb {
-	display: none;
+
+}
+.breadcrumb ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.breadcrumb ul li {
+	display: inline-block;
+	vertical-align: middle;
+}
+.breadcrumb ul li a {
+
 }
 
 

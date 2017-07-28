@@ -3,21 +3,32 @@
 require_once "includes/maincore.php";
 
 $fusion_uri = stripinput(FUSION_URI);
+$fusion_uri = explode("?", $fusion_uri);
+$fusion_uri = $fusion_uri[0];
 if ($fusion_uri=="/") { $fusion_uri = $settings['opening_page']; }
 $fusion_uri_arr = explode("/", $fusion_uri);
 $component = "custom_pages";
 
-debug( $fusion_uri_arr );
+//debug( $fusion_uri );
 
-if ( isset($fusion_uri_arr[1]) && $fusion_uri_arr[1]=="videos" )
+if ($fusion_uri=="/login") {
+    $component = "login";
+    $alias = "";
+} else if ($fusion_uri=="/parser") {
+    $component = "parser";
+    $alias = "";
+} else if ( isset($fusion_uri_arr[1]) && $fusion_uri_arr[1]=="videos" )
 {
     $component = "video_index";
     if(isset($fusion_uri_arr[4])) {
         $component = "404";
+        $alias = "";
     } else if(isset($fusion_uri_arr[3])) {
         $component = "videos";
+        $alias = $fusion_uri_arr[3];
     } else if(isset($fusion_uri_arr[2])) {
         $component = "video_cats";
+        $alias = $fusion_uri_arr[2];
     }
 }
 
@@ -26,7 +37,8 @@ require_once COMPONENTS . $component .".php";
 require_once THEMES ."templates/footer.php";
 
 
-debug( $component );
+//debug( $component );
+//debug( $alias );
 
 
 //$component_url = "";

@@ -95,12 +95,12 @@
 
 		if (isset($_POST['save'])) {
 
-			$title = stripinput($_POST['title']);
-			$description = stripinput($_POST['description']);
-			$keywords = stripinput($_POST['keywords']);
-			$name = stripinput($_POST['name']);
-			$h1 = stripinput($_POST['h1']);
-			$content = stripinput($_POST['content']);
+			$title = trim(str_replace("  ", " ", stripinput($_POST['title'])));
+			$description = trim(str_replace("  ", " ", stripinput($_POST['description'])));
+			$keywords = trim(str_replace("  ", " ", stripinput($_POST['keywords'])));
+			$name = trim(str_replace("  ", " ", stripinput($_POST['name'])));
+			$h1 = trim(str_replace("  ", " ", stripinput($_POST['h1'])));
+			$content = trim(str_replace("  ", " ", stripinput($_POST['content'])));
 
 			$image = $_FILES['image']['name'];
 			$imagetmp  = $_FILES['image']['tmp_name'];
