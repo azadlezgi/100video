@@ -32,7 +32,7 @@ if ($component=="videos") {
 											`image`,
 											`content`,
 											`url`,
-											`user`,
+											`duration`,
 											`access`,
 											`date`,
 											`ratings`,
@@ -47,13 +47,13 @@ if ($component=="videos") {
 
 		if (dbrows($result_rel)) {
 
-			$all_user_arr = array();
-			$result_user = dbquery("SELECT user_id, user_name FROM ". DB_USERS);
-			if (dbrows($result_user)) {
-				while ($data_user = dbarray($result_user)) {
-					$all_user_arr[$data_user['user_id']] = $data_user['user_name'];
-				} // db while
-			} // db query
+//			$all_user_arr = array();
+//			$result_user = dbquery("SELECT user_id, user_name FROM ". DB_USERS);
+//			if (dbrows($result_user)) {
+//				while ($data_user = dbarray($result_user)) {
+//					$all_user_arr[$data_user['user_id']] = $data_user['user_name'];
+//				} // db while
+//			} // db query
 ?>
 <div class="related_videos">
 	<?php openside("Похожее видео"); ?>
@@ -67,7 +67,7 @@ if ($component=="videos") {
 				$name_rel = $data_rel['name'];
 				$image_rel = $data_rel['image'];
 				$url_rel = $data_rel['url'];
-				$user_rel = $data_rel['user'];
+				$duration_rel = $data_rel['duration'];
 				$access_rel = $data_rel['access'];
 				$date_rel = $data_rel['date'];
 				$ratings_rel = $data_rel['ratings'];
@@ -76,12 +76,12 @@ if ($component=="videos") {
 
 				if (checkgroup($access_rel)) {
 
-					foreach ($all_user_arr as $key_user => $value_user) {
-						if ($user_rel==$key_user) {
-							$user_id = $key_user;
-							$user_name = $value_user;
-						}
-					} // foreach all_user_arr
+//					foreach ($all_user_arr as $key_user => $value_user) {
+//						if ($user_rel==$key_user) {
+//							$user_id = $key_user;
+//							$user_name = $value_user;
+//						}
+//					} // foreach all_user_arr
 ?>
 		<li>
 			<div class="videos_thumb">
@@ -92,7 +92,7 @@ if ($component=="videos") {
 			</div>
 			<div class="videos_media"> 
 				<h4><a href="/videos/<?php echo $fusion_uri_arr[2] ."/". $alias_rel; ?>"><?php echo $name_rel; ?></a></h4>
-				<span class="user"><a href="/videouser/user_<?php echo $user_id; ?>"><i class="fa fa-user"></i></a> <p><?php echo $user_name; ?></p></span>
+				<span class="clock"><i class="fa fa-clock-o"></i> <p><?php echo $duration_rel; ?></p></span>
 				<span class="calendar"><i class="fa fa-calendar"></i> <p><?php echo date("d.m.Y", $date_rel); ?></p></span>
 				<span class="views"><i class="fa fa-eye"></i> <p><?php echo number_format($views_rel, 0, '.', ''); ?></p></span>
 				<span class="raiting">

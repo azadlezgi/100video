@@ -351,40 +351,55 @@ section aside {
 .videos_list {
 	position: relative;
 }
-.videos_list ul {
-	list-style: none;
-	margin: 0;
-	padding: 0;
+.videos_list > div {
+	margin-right: -10px;
+	margin-left: -10px;
 }
-.videos_list ul:after {
-	content: " ";
-	display: block;
+.videos_list > div .col-sm-3 {
+	padding-right: 10px;
+	padding-left: 10px;
+	margin-bottom: 20px;
+}
+.videos_list > div .col-sm-3 > h4 {
+	position: absolute;
+	top: 2px;
+	left: 0;
 	width: 100%;
-	height: 0;
-	clear: both;
+	padding: 0 14px;
+	margin: 0;
+
+	-webkit-transition: all 0.3s ease-in-out;
+	-moz-transition: all 0.3s ease-in-out;
+	-ms-transition: all 0.3s ease-in-out;
+	-o-transition: all 0.3s ease-in-out;
+	transition: all 0.3s ease-in-out;
 }
-.videos_list ul li {
-	float: left;
-	width: 200px;
-	margin: 0 15px 15px 0;
+.videos_list > div .col-sm-3:hover > h4 {
+	opacity: 0;
 }
-.videos_list ul li.last {
-    margin-right: 0;
+.videos_list > div .col-sm-3 > h4 a {
+	text-align: center;
+	color: #fff;
+	text-shadow: 1px 1px 1px #333;
+	font-size: 15px !important;
+	height: 33px !important;
 }
-.videos_list ul li .videos_thumb {
-	margin: 0 0 10px 0;
+.videos_list > div .col-sm-3 > h4 a:hover {
+	text-decoration: none;
 }
-.videos_list ul li .videos_thumb a {
+.videos_list > div .col-sm-3 .videos_thumb {
+	margin: 0;
+}
+.videos_list > div .col-sm-3 .videos_thumb a {
 	position: relative;
 	display: block;
-	width: 200px;
-	height: 110px;
+	height: 140px;
 	overflow: hidden;
 }
-.videos_list ul li .videos_thumb a img {
-	width: 200px;
+.videos_list > div .col-sm-3 .videos_thumb a img {
+	width: 100%;
 	height: auto;
-	min-height: 110px;
+	min-height: 140px;
 	border: none;
 
     -webkit-transition: all 0.3s ease-in-out;
@@ -393,10 +408,10 @@ section aside {
     -o-transition: all 0.3s ease-in-out;
     transition: all 0.3s ease-in-out;
 }
-.videos_list ul li .videos_thumb a:hover img {
+.videos_list > div .col-sm-3:hover .videos_thumb a img {
 	opacity: 0.8;
 }
-.videos_list ul li .videos_thumb a .fa {
+.videos_list > div .col-sm-3 .videos_thumb a .fa {
 	position: absolute;
 	top: 50%;
 	left: 50%;
@@ -412,45 +427,145 @@ section aside {
     -o-transition: all 0.3s ease-in-out;
     transition: all 0.3s ease-in-out;
 }
-.videos_list ul li .videos_thumb a:hover .fa {
+.videos_list > div .col-sm-3:hover .videos_thumb a .fa {
 	opacity: 0.8;
 }
-.videos_list ul li h4 a {
+.videos_list > div .col-sm-3 h4 a {
 	display: block;
 	height: 40px;
 	overflow: hidden;
 	font-size: 18px;
 }
-.videos_list ul li .videos_media span {
+.videos_list > div .col-sm-3 .videos_media {
+	position: absolute;
+	top: 105px;
+	left: 0;
+	width: 100%;
+	padding: 0 14px;
+
+	-webkit-transition: all 0.3s ease-in-out;
+	-moz-transition: all 0.3s ease-in-out;
+	-ms-transition: all 0.3s ease-in-out;
+	-o-transition: all 0.3s ease-in-out;
+	transition: all 0.3s ease-in-out;
+}
+.videos_list > div .col-sm-3:hover .videos_media {
+	opacity: 0;
+}
+.videos_list > div .col-sm-3 .videos_media span {
 	display: block;
-	margin: 0 0 3px 0;
-	color: #aaa;
+	margin: 0;
+	color: #fff;
+	text-shadow: 1px 1px 1px #333;
 	font-size: 12px;
 }
-.videos_list ul li .videos_media span .fa {
+.videos_list > div .col-sm-3 .videos_media span .fa {
 	margin: 0 3px 0 0;
 }
-.videos_list ul li .videos_media .user {
+.videos_list > div .col-sm-3 .videos_media .duration {
 	float: left;
 	width: 50%;
 }
-.videos_list ul li .videos_media .calendar {
+.videos_list > div .col-sm-3 .videos_media span.duration .fa {
+	font-size: 14px;
+	vertical-align: text-bottom;
+}
+.videos_list > div .col-sm-3 .videos_media .calendar {
 	float: right;
 	width: 50%;
 	text-align: right;
 }
-.videos_list ul li .videos_media .raiting {
+.videos_list > div .col-sm-3 .videos_media .raiting {
 	float: left;
 	width: 50%;
 }
-.videos_list ul li .videos_media .views {
+.videos_list > div .col-sm-3 .videos_media .views {
 	float: right;
 	width: 50%;
 	text-align: right;
 }
 
+.content_desc {
+	margin-bottom: 30px;
+}
 
 
+
+#videos_cats_gride {
+
+}
+#videos_cats_gride .col-sm-4 {
+	position: relative;
+	overflow: hidden;
+	height: 270px;
+	margin-bottom: 30px;
+}
+#videos_cats_gride figure {
+	border: 1px solid silver;
+	height: 270px;
+	overflow: hidden;
+
+	-webkit-transition: all 0.3s ease-in-out;
+	-moz-transition: all 0.3s ease-in-out;
+	-ms-transition: all 0.3s ease-in-out;
+	-o-transition: all 0.3s ease-in-out;
+	transition: all 0.3s ease-in-out;
+}
+#videos_cats_gride figure:hover {
+	border-color: #333;
+}
+#videos_cats_gride figure a {
+
+}
+#videos_cats_gride figure a img {
+
+}
+#videos_cats_gride figure a:hover img {
+
+}
+#videos_cats_gride figure a .fa {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin: -17px 0 0 -14px;
+	font-size: 35px;
+	color: #fff;
+	opacity: 0;
+	z-index: 2;
+
+	-webkit-transition: all 0.3s ease-in-out;
+	-moz-transition: all 0.3s ease-in-out;
+	-ms-transition: all 0.3s ease-in-out;
+	-o-transition: all 0.3s ease-in-out;
+	transition: all 0.3s ease-in-out;
+}
+#videos_cats_gride figure a:hover .fa {
+	opacity: 0.8;
+}
+#videos_cats_gride h4 {
+	position: absolute;
+	bottom: 10px;
+	right: 30px;
+	padding: 0;
+	margin: 0;
+}
+#videos_cats_gride h4 a {
+	display: block;
+	text-align: right;
+	color: #fff;
+	text-shadow: 1px 1px 1px #333;
+	text-transform: uppercase;
+
+	-webkit-transition: all 0.3s ease-in-out;
+	-moz-transition: all 0.3s ease-in-out;
+	-ms-transition: all 0.3s ease-in-out;
+	-o-transition: all 0.3s ease-in-out;
+	transition: all 0.3s ease-in-out;
+}
+#videos_cats_gride .col-sm-4:hover h4 a {
+	text-decoration: none;
+	text-shadow: 1px 1px 1px #000;
+}
 
 
 .related_videos {
@@ -481,7 +596,8 @@ section aside {
 	position: relative;
 	display: block;
 	width: 100px;
-	height: 56px;
+	height: 65px;
+	overflow: hidden;
 }
 .related_videos ul li .videos_thumb a img {
 	width: 100px;
@@ -517,7 +633,7 @@ section aside {
 }
 .related_videos ul li .videos_media h4 {
 	padding: 0;
-	margin: 0 0 5px 0;
+	margin: 0 0 10px 0;
 }
 .related_videos ul li .videos_media h4 a {
 	display: block;
@@ -527,14 +643,21 @@ section aside {
 }
 .related_videos ul li .videos_media .raiting {
 	position: absolute;
-	bottom: 0;
+	bottom: 3px;
 	right: 0;
+	margin: 0;
 }
 .related_videos ul li .videos_media > span {
 	position: relative;
-	margin: 0 3px 0 0;
+	margin: 0 1px 0 0;
 	padding: 0 3px 0 0;
 	color: #666
+}
+.related_videos ul li .videos_media > span.clock {
+	font-size: 17px;
+	height: 25px;
+	display: inline-block;
+	vertical-align: middle;
 }
 .related_videos ul li .videos_media > span > p {
     position: absolute;
@@ -554,6 +677,9 @@ section aside {
     -webkit-border-radius: 2px;
     -moz-border-radius: 2px;
     border-radius: 2px;
+}
+.related_videos ul li .videos_media > span.clock > p {
+	top: 3px;
 }
 .related_videos ul li .videos_media > span:hover > p {
 	display: block;

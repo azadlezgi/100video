@@ -51,7 +51,19 @@ if (dbrows($c_result)) {
 		// }
 
 
-		opentable( (!empty($c_h1) ? $c_h1 : $c_name) );
+    if (FUSION_URI!="/") {
+        echo "<div class='breadcrumb'>\n";
+        echo "	<ul>\n";
+        echo "		<li><a href='/'>". $locale['640'] ."</a> <i class='fa fa-angle-double-right'></i></li>\n";
+        echo "		<li><a href='/videos'>". $locale['641'] ."</a> <i class='fa fa-angle-double-right'></i></li>\n";
+        echo "		<li><span>". $c_name ."</span></li>\n";
+        echo "	</ul>\n";
+        echo "</div>\n";
+    }
+
+
+
+		opentable( (isset($c_h1) && !empty($c_h1) ? $c_h1 : $c_name) );
 
 
 
@@ -94,7 +106,7 @@ if (dbrows($c_result)) {
 
 
 
-if ($_GET['page']>0) { $pagesay = (INT)$_GET['page']; }
+if (isset($_GET['page']) && $_GET['page']>0) { $pagesay = (INT)$_GET['page']; }
 else { $pagesay = 1; }
 $rowstvideo = $settings['videos_per_page']*($pagesay-1);
 
@@ -107,7 +119,7 @@ $rowstvideo = $settings['videos_per_page']*($pagesay-1);
 											`image`,
 											`content`,
 											`url`,
-											`user`,
+											`duration`,
 											`access`,
 											`date`,
 											`ratings`,
@@ -117,23 +129,16 @@ $rowstvideo = $settings['videos_per_page']*($pagesay-1);
 					WHERE status='1'
 					AND date<'". FUSION_TODAY ."'
 					AND cat='". $c_id ."'
-					". ($_GET['user']>0 ? " AND user=". (INT)$_GET['user'] : "") ."
+					". (isset($_GET['user']) && $_GET['user']>0 ? " AND user=". (INT)$_GET['user'] : "") ."
 					ORDER BY `order`
 					LIMIT ". $rowstvideo .", ". $settings['videos_per_page'] ."");
 
 
 				if (dbrows($result)) { $say = 0;
 
-					$all_user_arr = array();
-					$result_user = dbquery("SELECT user_id, user_name FROM ". DB_USERS);
-					if (dbrows($result_user)) {
-						while ($data_user = dbarray($result_user)) {
-							$all_user_arr[$data_user['user_id']] = $data_user['user_name'];
-						} // db while
-					} // db query
 ?>
 <div class="videos_list">
-	<ul>
+	<div class="row clearfix">
 <?php
 					while ($data = dbarray($result)) {
 
@@ -141,7 +146,7 @@ $rowstvideo = $settings['videos_per_page']*($pagesay-1);
 						$name = $data['name'];
 						$image = $data['image'];
 						$url = $data['url'];
-						$user = $data['user'];
+						$duration = $data['duration'];
 						$access = $data['access'];
 						$date = $data['date'];
 						$ratings = $data['ratings'];
@@ -150,24 +155,18 @@ $rowstvideo = $settings['videos_per_page']*($pagesay-1);
 
 						if (checkgroup($access)) { $say++;
 
-							foreach ($all_user_arr as $key_user => $value_user) {
-								if ($user==$key_user) {
-									$user_id = $key_user;
-									$user_name = $value_user;
-								}
-							} // foreach all_user_arr
 
 ?>
-	<li<?php echo ($say==4 ? " class='last'" : ""); ?>>
+	<div class="col-sm-3">
 		<div class="videos_thumb">
 			<a href="/videos/<?php echo $c_alias ."/". $alias; ?>">
-				<img src="<?php echo ($image ? IMAGES_V_T . $image : "https://i.ytimg.com/vi/". $url ."/mqdefault.jpg"); ?>" alt="<?php echo $name[LOCALESHORT]; ?>">
+				<img src="<?php echo ($image ? IMAGES_V_T . $image : "https://i.ytimg.com/vi/". $url ."/mqdefault.jpg"); ?>" alt="<?php echo $name; ?>">
 				<i class="fa fa-play"></i>
 			</a>
 		</div>
 		<h4><a href="/videos/<?php echo $c_alias ."/". $alias; ?>"><?php echo $name; ?></a></h4>
-		<div class="videos_media"> 
-			<span class="user"><a href="/videouser/user_<?php echo $user_id; ?>"><i class="fa fa-user"></i> <?php echo $user_name; ?></a></span>
+		<a href="/videos/<?php echo $c_alias ."/". $alias; ?>" class="videos_media">
+			<span class="duration"><i class="fa fa-clock-o"></i> <?php echo $duration; ?></span>
 			<span class="calendar"><i class="fa fa-calendar"></i><?php echo date("d.m.Y", $date); ?></span>
 			<span class="views"><i class="fa fa-eye"></i><?php echo number_format($views, 0, '.', ' '); ?></span>
 			<span class="raiting">
@@ -177,18 +176,13 @@ $rowstvideo = $settings['videos_per_page']*($pagesay-1);
 					echo str_repeat('<i class="fa fa-star-o"></i>', $ratings_o);
 				?>
 			</span>
-		</div>
-	</li>
+		</a>
+	</div>
 <?php
-
-	if ($say==4) {
-		$say = 0;
-		echo "<div class='clear'></div>\n";
-	} 
 						} // access
 					} // db whille
 ?>
-	</ul>
+	</div>
 </div>
 <div class="clear"></div>
 <?php
@@ -196,17 +190,21 @@ $rowstvideo = $settings['videos_per_page']*($pagesay-1);
 		echo "Нет ни одного видео ролика\n";
 	} // db query
 
-	echo navigation( (INT)$_GET['page'], $settings['videos_per_page'], "id", DB_VIDEOS, "status='1' AND date<'". FUSION_TODAY ."' AND cat='". $filedid ."' AND ". groupaccess('access') . ($_GET['user']>0 ? " AND user=". (INT)$_GET['user'] : "") ."");
+	echo navigation( (isset($_GET['page']) && $_GET['page']>0 ? (INT)$_GET['page'] : 0), $settings['videos_per_page'], "id", DB_VIDEOS, "status='1' AND date<'". FUSION_TODAY ."' AND cat='". $c_id ."' AND ". groupaccess('access') . (isset($_GET['user']) && $_GET['user']>0 ? " AND user=". (INT)$_GET['user'] : "") ."");
 
 
 
-				if ($c_image) {
-				    echo "<img src='". IMAGES_VC . $c_image ."' alt='' />\n";
+//				if ($c_image) {
+//				    echo "<img src='". IMAGES_VC . $c_image ."' alt='' />\n";
+//              }
+                if (isset($c_content) && !empty($c_content)) {
+                    echo "<div class='content_desc'>\n";
+                    ob_start();
+                    eval("?>" . htmlspecialchars_decode($c_content) . "<?php ");
+                    $custompage = ob_get_contents();
+                    ob_end_flush();
+                    echo "</div>\n";
                 }
-				ob_start();
-				eval("?>".htmlspecialchars_decode($c_content)."<?php ");
-				$custompage = ob_get_contents();
-				ob_end_flush();
 
 
 

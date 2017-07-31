@@ -49,19 +49,19 @@ require_once BASEDIR."includes/multisite_include.php";
 
 
 
-if (!isset($_SESSION['zuSxGeo'])) {
-
-	include BASEDIR ."includes/SxGeo/SxGeo.php";
-	$SxGeo = new SxGeo(BASEDIR ."includes/SxGeo/SxGeo.dat", SXGEO_BATCH | SXGEO_MEMORY);
-	$SxGeoCountry = $SxGeo->getCountry($_SERVER['REMOTE_ADDR']);
-	$_SESSION['zuSxGeo'] = $SxGeoCountry;
-
-	// echo "<!--";
-	// echo "<pre>";
-	// print_r($SxGeo);
-	// echo "</pre>";
-	// echo "-->";
-}
+//if (!isset($_SESSION['zuSxGeo'])) {
+//
+//	include BASEDIR ."includes/SxGeo/SxGeo.php";
+//	$SxGeo = new SxGeo(BASEDIR ."includes/SxGeo/SxGeo.dat", SXGEO_BATCH | SXGEO_MEMORY);
+//	$SxGeoCountry = $SxGeo->getCountry($_SERVER['REMOTE_ADDR']);
+//	$_SESSION['zuSxGeo'] = $SxGeoCountry;
+//
+//	// echo "<!--";
+//	// echo "<pre>";
+//	// print_r($SxGeo);
+//	// echo "</pre>";
+//	// echo "-->";
+//}
 
 
 

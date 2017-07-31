@@ -3,6 +3,7 @@
 	$locale['description'] = "";
 	$locale['keywords'] = "";
 	$locale['h1'] = "Video Site Home";
-	
-	$locale['640'] = "Главная";
+
+$locale['640'] = "Главная";
+$locale['641'] = "Видео";
 ?>

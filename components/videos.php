@@ -10,6 +10,7 @@ include LOCALE.LOCALESET."videos.php";
 
 
 $result = dbquery("SELECT 
+								`id`,
 								`title`,
 								`description`,
 								`keywords`,
@@ -33,7 +34,8 @@ AND date<'". FUSION_TODAY ."'");
 if (dbrows($result)) {
 	$data = dbarray($result);
 
-	$title = $data['title'];
+    $id = $data['id'];
+    $title = $data['title'];
 	$description = $data['description'];
 	$keywords = $data['keywords'];
 	$name = $data['name'];
@@ -64,7 +66,8 @@ if (dbrows($result)) {
 	 if (FUSION_URI!="/") {
 	 echo "<div class='breadcrumb'>\n";
 	 echo "	<ul>\n";
-	 echo "		<li><a href='/'>". $locale['640'] ."</a> <i class='fa fa-angle-double-right'></i></li>\n";
+         echo "		<li><a href='/'>". $locale['640'] ."</a> <i class='fa fa-angle-double-right'></i></li>\n";
+         echo "		<li><a href='/videos'>". $locale['641'] ."</a> <i class='fa fa-angle-double-right'></i></li>\n";
 
      $breadcrumb_result = dbquery("SELECT 
                                 `name`,
@@ -129,7 +132,7 @@ if (dbrows($result)) {
 		</span>
 	</div>
 	<div class="content">
-		<p><?php echo str_replace("\n", "<br />", strip_tags(htmlspecialchars_decode($content[LOCALESHORT]))); ?></p>
+		<p><?php echo str_replace("\n", "<br />", strip_tags(htmlspecialchars_decode($content))); ?></p>
 	</div>
 	<div id="vk_comments"></div>
 </div>
@@ -140,7 +143,7 @@ if (dbrows($result)) {
 		$result_views = dbquery(
 						"UPDATE ". DB_VIDEOS ." SET
 															views='". $update_views ."'
-						WHERE id='". $filedid ."'"
+						WHERE alias='". $alias ."'"
 		);
 
 	} else {
@@ -148,6 +151,8 @@ if (dbrows($result)) {
 	} // checkgroup access
 
 	closetable();
+
+    showcomments("V", DB_VIDEOS, "id", $id,FUSION_SELF."?id=". $id);
 
 
 

@@ -3,11 +3,12 @@ header("Content-type: text/plain");
 ?>
 User-agent: *
 <?php if (ROBOTS=="Disallow") { ?>
+Disallow: /
 <?php } ?>
 Disallow: /manager/
 Disallow: /administration/
 Disallow: /locale/
 Disallow: /themes/
 Disallow: /print.php
-Host: <?php echo FUSION_HOST ."\n"; ?>
-Sitemap: http://<?php echo FUSION_HOST; ?>/sitemap.xml
+Host: <?php echo (isset($settings['site_protocol']) && $settings['site_protocol']=="https" ? "https://" : "") . $settings['site_host'] ."\n"; ?>
+Sitemap: <?php echo $settings['siteurl']; ?>sitemap.xml

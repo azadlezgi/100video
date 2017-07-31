@@ -2,23 +2,34 @@
 // header("HTTP/1.0 404 Not Found");
 require_once "includes/maincore.php";
 
-$fusion_uri = stripinput(FUSION_URI);
-$fusion_uri = explode("?", $fusion_uri);
-$fusion_uri = $fusion_uri[0];
+if (isset($_GET['row_url'])) {
+    $fusion_uri = "/". stripinput($_GET['row_url']);
+} else {
+    $fusion_uri = stripinput(FUSION_URI);
+    $fusion_uri = explode("?", $fusion_uri);
+    $fusion_uri = $fusion_uri[0];
+}
 if ($fusion_uri=="/") { $fusion_uri = $settings['opening_page']; }
 $fusion_uri_arr = explode("/", $fusion_uri);
 $component = "custom_pages";
+$exp = ".php";
 
 //debug( $fusion_uri );
+//debug( $fusion_uri_arr );
 
-if ($fusion_uri=="/login") {
+
+if (file_exists(COMPONENTS . $fusion_uri)) {
+    $fusion_uri_exist = explode(".", $fusion_uri_arr[1]);
+    $component = $fusion_uri_exist[0];
+    $alias = "";
+    $exp = ".". $fusion_uri_exist[1];
+} else if ($fusion_uri=="/login") {
     $component = "login";
     $alias = "";
 } else if ($fusion_uri=="/parser") {
     $component = "parser";
     $alias = "";
-} else if ( isset($fusion_uri_arr[1]) && $fusion_uri_arr[1]=="videos" )
-{
+} else if ( isset($fusion_uri_arr[1]) && $fusion_uri_arr[1]=="videos" ) {
     $component = "video_index";
     if(isset($fusion_uri_arr[4])) {
         $component = "404";
@@ -32,9 +43,11 @@ if ($fusion_uri=="/login") {
     }
 }
 
-require_once THEMES ."templates/header.php";
-require_once COMPONENTS . $component .".php";
-require_once THEMES ."templates/footer.php";
+
+
+if ( ($fusion_uri!="/robots.txt") && ($fusion_uri!="/sitemap.xml") && ($fusion_uri!="/yandex_wdgt.xhtml") ) { require_once THEMES ."templates/header.php"; }
+require_once COMPONENTS . $component . $exp;
+if ( ($fusion_uri!="/robots.txt") && ($fusion_uri!="/sitemap.xml") && ($fusion_uri!="/yandex_wdgt.xhtml") ) { require_once THEMES ."templates/footer.php"; }
 
 
 //debug( $component );
