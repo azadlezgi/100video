@@ -1,19 +1,7 @@
 RewriteEngine On
 
-# RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /index\.php\ HTTP/ 
-# RewriteRule ^index\.php$ http://issohost.ru/ [R=301,L]
-
 RewriteCond %{THE_REQUEST} ^(.*)index\.php\ HTTP/ 
 RewriteRule ^(.*)index\.php$ /$1 [R=301,L]
-
-
-
-
-RewriteCond %{HTTP_HOST} ^www.minecraftvideotut.ru(.*)
-RewriteRule ^(.*)$ http://minecraftvideotut.ru/$1 [R=301,L]
-
-RewriteCond %{HTTP_HOST} ^www.issohost.com(.*)
-RewriteRule ^(.*)$ http://issohost.com/$1 [R=301,L]
 
 
 
