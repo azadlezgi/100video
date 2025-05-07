@@ -83,3 +83,10 @@ Each domain has an independent admin panel via video1.com/login, video2.com/logi
 	•	Tested with PHP 7.0+.
 	•	Add config.php to .gitignore to protect DB credentials.
 	•	Migration to PDO or MySQLi is recommended for modern security.
+
+
+✍ Author
+
+Azad Lezgi
+📧 Email: [azadlezgi@yandex.ru]
+🔗 GitHub: github.com/azadlezgi
